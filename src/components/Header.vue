@@ -92,21 +92,21 @@ const sitename = computed(() => appStore.publicSettings?.sitename || 'Komari Mon
   <VisitorInfo v-if="!appStore.loading && appStore.visitorInfoEnabled" />
 
   <div
-    class="transition-all duration-200 top-0 sticky z-10 border-b border-transparent"
+    class="transition-all duration-200 top-0 sticky z-10 border-b border-transparent pt-[env(safe-area-inset-top)]"
     :class="isScrolled ? '!border-slate-500/10 backdrop-blur-lg' : 'bg-transparent'"
   >
-    <div class="px-4 flex-between h-14 max-w-[1280px] mx-auto">
-      <div class="flex items-center gap-3 cursor-pointer" @click="router.push('/')">
-        <Avatar class="size-8">
+    <div class="px-4 flex-between h-14 max-w-[1280px] mx-auto gap-2 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
+      <div class="flex min-w-0 items-center gap-2 sm:gap-3 cursor-pointer" @click="router.push('/')">
+        <Avatar class="size-8 shrink-0">
           <AvatarImage :src="siteFavicon" :alt="sitename" />
           <AvatarFallback>{{ sitename.slice(0, 1) }}</AvatarFallback>
         </Avatar>
-        <h3 class="m-0 text-lg font-semibold">
+        <h3 class="m-0 truncate text-base sm:text-lg font-semibold">
           {{ sitename }}
         </h3>
       </div>
       <TooltipProvider :delay-duration="200">
-        <div class="flex items-center gap-2">
+        <div class="flex shrink-0 items-center gap-1 sm:gap-2">
           <Tooltip v-for="button in actionButtons" :key="button.action">
             <TooltipTrigger as-child>
               <Button

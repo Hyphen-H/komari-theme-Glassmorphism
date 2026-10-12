@@ -492,8 +492,8 @@ const metricCards = computed<MetricCard[]>(() => appStore.detailMetricCardOrder.
 
     <template v-else>
       <!-- 顶部导航 -->
-      <div class="px-4 flex flex-wrap gap-2 items-center sm:gap-4">
-        <Button variant="ghost" size="icon-sm" class="bg-background/50 hover:bg-background" aria-label="返回首页" @click="router.push('/')">
+      <div class="px-4 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-2 items-center sm:flex sm:flex-wrap sm:gap-4">
+        <Button variant="ghost" size="icon-sm" class="shrink-0 bg-background/50 hover:bg-background" aria-label="返回首页" @click="router.push('/')">
           <Icon icon="tabler:arrow-left" :width="16" :height="16" />
         </Button>
         <div class="min-w-0 text-lg font-bold flex gap-2 items-center">
@@ -504,7 +504,7 @@ const metricCards = computed<MetricCard[]>(() => appStore.detailMetricCardOrder.
           {{ data.online ? '在线' : '离线' }}
         </Badge>
         <!-- 节点自定义标签 -->
-        <div v-if="customTags.length" class="flex flex-wrap gap-1">
+        <div v-if="customTags.length" class="col-span-3 flex flex-wrap gap-1 sm:order-none">
           <Badge
             v-for="(tag, i) in customTags" :key="i" variant="outline"
             class="!text-[11px] rounded text-muted-foreground border-muted-foreground/15 px-1.5 py-0"
@@ -512,7 +512,7 @@ const metricCards = computed<MetricCard[]>(() => appStore.detailMetricCardOrder.
             {{ tag }}
           </Badge>
         </div>
-        <div class="ml-auto flex h-8 shrink-0 items-center gap-1 rounded-md bg-background/50 p-0.5 backdrop-blur-xs">
+        <div class="col-span-3 flex h-8 shrink-0 items-center justify-end gap-1 rounded-md bg-background/50 p-0.5 backdrop-blur-xs sm:ml-auto">
           <Button
             variant="ghost" size="icon-sm"
             class="size-7 rounded-sm shadow-none"
