@@ -306,6 +306,26 @@ for (const scenario of [
       await expect(tooltip).toContainText('最小')
       await expect(tooltip).toContainText('平均')
       await expectUncoveredTooltip()
+      const contrast = await tooltip.evaluate((element) => {
+        const canvas = document.createElement('canvas')
+        canvas.width = canvas.height = 1
+        const ctx = canvas.getContext('2d')!
+        const rgb = (color: string) => {
+          ctx.clearRect(0, 0, 1, 1)
+          ctx.fillStyle = color
+          ctx.fillRect(0, 0, 1, 1)
+          return [...ctx.getImageData(0, 0, 1, 1).data]
+        }
+        const luminance = (color: number[]) => color.slice(0, 3).map(value => value / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4).reduce((sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i]!, 0)
+        const background = rgb(getComputedStyle(element).backgroundColor)
+        const foreground = rgb(getComputedStyle(element.querySelector('span')!).color)
+        const alpha = foreground[3]! / 255
+        const text = foreground.map((value, i) => value * alpha + background[i]! * (1 - alpha))
+        const a = luminance(background)
+        const b = luminance(text)
+        return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+      })
+      expect(contrast).toBeGreaterThanOrEqual(4.5)
       await expect(taskCard).not.toHaveClass(/opacity-30/)
       await page.screenshot({ path: `test-results/ping-tooltip-${scenario.name.replaceAll(' ', '-')}.png` })
 

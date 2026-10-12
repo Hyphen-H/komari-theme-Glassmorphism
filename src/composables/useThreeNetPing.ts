@@ -6,8 +6,7 @@ import { computed, onScopeDispose, shallowRef, toValue, watch } from 'vue'
 import { loadPublicPingTasks } from '@/services/metrics.service'
 import { subscribeVisibleRefresh } from '@/services/visibleRefresh.service'
 import { useAppStore } from '@/stores/app'
-
-const CARRIER_PATTERNS = [/电信|telecom|\bct\b/i, /联通|unicom|\bcu\b/i, /移动|mobile|cmcc|\bcm\b/i]
+import { shortenPingTaskName } from '@/utils/threeNetSettings'
 
 // Adapted from towersip: explicit IDs, per-node bindings, and separate history
 // computations from live values so status polling does not rebuild SVG paths.
@@ -48,12 +47,7 @@ export function useThreeNetPing(node: MaybeRefOrGetter<NodeData>, stats: ReturnT
       return configured
     if (app.threeNetPingTaskIds.length)
       return app.threeNetPingTaskIds
-    const applicable = tasks.value.filter(task => !task.clients?.length || task.clients.includes(uuid))
-    const carrierIds = CARRIER_PATTERNS.flatMap((pattern) => {
-      const match = applicable.find(task => pattern.test(task.name))
-      return match ? [match.id] : []
-    })
-    return [...new Set([...carrierIds, ...applicable.map(task => task.id)])].slice(0, 3)
+    return []
   })
   const historyItems = computed(() => taskIds.value.map((id) => {
     const value = stats.taskStats(id)
@@ -70,6 +64,9 @@ export function useThreeNetPing(node: MaybeRefOrGetter<NodeData>, stats: ReturnT
     return {
       ...item,
       name,
+      label: shortenPingTaskName(name, `#${item.id}`),
+      latencyValue: latency,
+      lossValue: loss,
       latency: latency === null ? '—' : latency < 0 ? '不可达' : `${Math.round(latency)} ms`,
       loss: loss === null ? '—' : `${loss.toFixed(1)}%`,
       live: latest !== null,

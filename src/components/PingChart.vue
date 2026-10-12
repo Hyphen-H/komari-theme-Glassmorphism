@@ -844,7 +844,7 @@ onBeforeUnmount(() => {
             v-for="task in latestValues" :key="task.id"
             :data-ping-task-id="task.id"
             class="p-2 rounded-md bg-background/50 hover:bg-background hover:shadow-[0_0_0_2px] hover:shadow-primary/10 flex gap-3 cursor-pointer select-none transition-all items-center"
-            :class="[!selectedTaskIds.includes(task.id) && 'opacity-30']"
+            :class="[!selectedTaskIds.includes(task.id) && 'ring-1 ring-inset ring-border/80']"
             :onmouseover="(e: MouseEvent) => ((e.currentTarget as HTMLElement).style.borderColor = task.color)"
             :onmouseout="(e: MouseEvent) => ((e.currentTarget as HTMLElement).style.borderColor = '')"
             @click="toggleTask(task.id)"
@@ -854,6 +854,7 @@ onBeforeUnmount(() => {
                 <div class="flex gap-2 items-center">
                   <div class="rounded h-4 w-1" :style="{ backgroundColor: task.color }" />
                   <span class="text-sm font-semibold truncate">{{ task.name }}</span>
+                  <span v-if="!selectedTaskIds.includes(task.id)" class="shrink-0 text-[10px] text-muted-foreground">未显示</span>
                   <div class="flex-1" />
                   <Tooltip
                     :open="isTouchTooltipMode ? activeTaskTooltipId === task.id : undefined"
@@ -861,7 +862,7 @@ onBeforeUnmount(() => {
                   >
                     <TooltipTrigger as-child>
                       <Button
-                        data-ping-tooltip-trigger variant="ghost" size="icon-xs" class="text-slate-500"
+                        data-ping-tooltip-trigger variant="ghost" size="icon-xs" class="text-muted-foreground"
                         @pointerdown="touchTooltip.pointerDown" @pointermove="touchTooltip.pointerMove" @pointercancel="touchTooltip.cancel"
                         @pointerup="touchTooltip.pointerUp($event, () => toggleTaskTooltip(task.id))"
                         @click="touchTooltip.click($event, () => toggleTaskTooltip(task.id))"
@@ -872,51 +873,51 @@ onBeforeUnmount(() => {
                     <TooltipContent class="!rounded p-3">
                       <div class="text-xs gap-x-4 gap-y-1.5 grid grid-cols-4">
                         <template v-if="task.min !== undefined">
-                          <span class="text-muted-foreground">最小</span>
+                          <span class="text-primary-foreground/80">最小</span>
                           <span class="font-medium">{{ Math.round(task.min) }} ms</span>
                         </template>
                         <template v-if="task.max !== undefined">
-                          <span class="text-muted-foreground">最大</span>
+                          <span class="text-primary-foreground/80">最大</span>
                           <span class="font-medium">{{ Math.round(task.max) }} ms</span>
                         </template>
                         <template v-if="task.avg !== undefined">
-                          <span class="text-muted-foreground">平均</span>
+                          <span class="text-primary-foreground/80">平均</span>
                           <span class="font-medium">{{ Math.round(task.avg) }} ms</span>
                         </template>
                         <template v-if="task.latest !== undefined">
-                          <span class="text-muted-foreground">最新</span>
+                          <span class="text-primary-foreground/80">最新</span>
                           <span class="font-medium">{{ Math.round(task.latest) }} ms</span>
                         </template>
                         <template v-if="task.p50 !== undefined">
-                          <span class="text-muted-foreground">P50</span>
+                          <span class="text-primary-foreground/80">P50</span>
                           <span class="font-medium">{{ Math.round(task.p50) }} ms</span>
                         </template>
                         <template v-if="task.p99 !== undefined">
-                          <span class="text-muted-foreground">P99</span>
+                          <span class="text-primary-foreground/80">P99</span>
                           <span class="font-medium">{{ Math.round(task.p99) }} ms</span>
                         </template>
                         <template v-if="task.p99_p50_ratio !== undefined">
-                          <span class="text-muted-foreground">波动率</span>
+                          <span class="text-primary-foreground/80">波动率</span>
                           <span class="font-medium">{{ task.p99_p50_ratio.toFixed(2) }}</span>
                         </template>
                         <template v-if="task.interval !== undefined">
-                          <span class="text-muted-foreground">间隔</span>
+                          <span class="text-primary-foreground/80">间隔</span>
                           <span class="font-medium">{{ task.interval }}s</span>
                         </template>
                         <template v-if="task.type">
-                          <span class="text-muted-foreground">类型</span>
+                          <span class="text-primary-foreground/80">类型</span>
                           <span class="font-medium">{{ task.type.toUpperCase() }}</span>
                         </template>
                         <template v-if="task.stddev !== undefined">
-                          <span class="text-muted-foreground">标准差</span>
+                          <span class="text-primary-foreground/80">标准差</span>
                           <span class="font-medium">{{ task.stddev.toFixed(1) }}</span>
                         </template>
                         <template v-if="task.total !== undefined">
-                          <span class="text-muted-foreground">总数</span>
+                          <span class="text-primary-foreground/80">总数</span>
                           <span class="font-medium">{{ task.total }}</span>
                         </template>
                         <template v-if="task.valid !== undefined">
-                          <span class="text-muted-foreground">有效</span>
+                          <span class="text-primary-foreground/80">有效</span>
                           <span class="font-medium">{{ task.valid }}</span>
                         </template>
                       </div>
@@ -955,7 +956,7 @@ onBeforeUnmount(() => {
               >
                 <TooltipTrigger as-child>
                   <Button
-                    data-ping-tooltip-trigger variant="ghost" size="icon-xs" class="text-slate-500"
+                    data-ping-tooltip-trigger variant="ghost" size="icon-xs" class="text-muted-foreground"
                     @pointerdown="touchTooltip.pointerDown" @pointermove="touchTooltip.pointerMove" @pointercancel="touchTooltip.cancel"
                     @pointerup="touchTooltip.pointerUp($event, toggleSmoothInfoTooltip)"
                     @click="touchTooltip.click($event, toggleSmoothInfoTooltip)"

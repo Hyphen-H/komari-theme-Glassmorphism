@@ -12,14 +12,20 @@
 
 ## 当前任务
 
-- 状态：in-progress，继续吸收优化并发布 v3.4.0（2026-10-12）
+- 状态：done，本地完成 towersip 三网展示与设置移植（2026-10-12）
+- 范围：M4 下游共享列宽 / 轻量行高 / 状态配色 / 历史浮窗；M5 独立样式开关、任务选择与按服务器编辑；M6 默认 / 三网 / 手机 / 保存权限回归。保持 compact 的实际宽度，不强制改成 comfortable；修复 Ping 统计浮窗对比度。
+- 来源：towersip a41270e460ee003e33f25091e8f3b3a950675662；保留主线请求缓存、断线、实时更新和手机轻点 / 滑动边界。按服务器设置适配为首页弹窗，保留两个公开路由；保存通过服务层验证管理员并合并最新主题设置。
+- 计划：移植视觉与设置 -> lint / build / 浏览器回归及截图 -> 更新来源与交接 -> Git 阶段存档。
+- 验证：lint / vue-tsc / build / diff --check 通过；完整 Playwright 42/42（55.6 秒）。实测 compact 曲线卡片与默认宽度相同、增加 24px 高度；覆盖三网方柱 / 曲线、空选择总览、实时更新 / 缺测、手机滚动、全局及节点 ID 保存、保留隐藏 / 未编辑节点与最新无关设置、204 成功响应、会话失效禁止保存。Ping 浮窗标签在亮 / 暗色通过 >=4.5:1 实际配色检查。截图位于 test-results/three-net-*.png 与 ping-tooltip-*.png；未声称真机 Safari 测试。
+
+- 状态：done，继续吸收优化并发布 v3.4.0（2026-10-12）
 - 用户授权：补充值得融合的优化 / 修复、统一测试、推送 GitHub 并发布新版本；沿用分阶段 Git 存档与来源致谢。
 - 范围：M3 地理地址 / 坐标校验与异步失效，M4 WebGL 地图回退 / 触屏浮窗，M5 可选分组计数与保留期内长范围，M6 回归、来源、版本与发布证据。A4 默认关闭、compact 默认及公共路由契约继续保留。
 - 计划：核对源代码增量 -> 移植 / 改写与聚焦验证 -> 更新致谢 / 3.4.0 -> lint / build / 完整适用回归 -> 推送 main -> 核对 Actions / tag / Release / 下载包 SHA-256 与包内配置。
 - GitHub：origin/main 已刷新，仍为 e0aedb0；gh auth status 被自动审批策略拒绝（never 无法审批），不判断 token 过期，不读取凭据。使用正常 Git 推送触发已有 release workflow，公开 REST API 验证结果。
 - 第二阶段实现：WebGL 能力检测 / 初始化及上下文丢失回退平铺地图；公网 IP 字面量与 IPv4-mapped 校验、IPv6 地理回退、权限与异步代次保护；手机 Tooltip 手势区分；可选分组计数；按后端保留期显示 7 / 15 / 30 天 Ping 范围。来源 pwremilk、3560912451zz-stack、casiuna、zfloong 已写入 README、融合记录与 THIRD-PARTY-NOTICES。
 - 新增验证：fork-followup 13/13、三网与图例 / Issue #59 聚焦 24/24；随后完整视觉矩阵 37/37（49.4 秒）；lint、vue-tsc、build、diff --check 已通过。包为 3.4.0，773 entries，SHA-256 AA9A8DF26475B60B277B54726706D70EB6A99F5FBC925F1ECE6869F73686CF4C。
-- 发布证据：提交 328d71b18ec9df8dcc8c499dace2bbc9db9d7d7c 已推送 main；Code Quality run 38238148317 成功；Release On Version Bump run 38238148334 成功，Release 3.4.0 已公开发布并指向该提交，资产 komari-theme-Glassmorphism-build-328d71b.zip 7,612,048 bytes，GitHub digest / 下载 SHA-256 1d32a368b0f5db9db1460402db37ce0bcd8646b0b8459c77ec0ec7372cb4297b。Visual Regression run 38238148469 在 Linux runner 失败，公开页面未提供日志且匿名 artifact 下载要求认证；本地同一套 37/37 已通过，不能将远端视觉检查标为成功。
+- 发布证据：提交 328d71b18ec9df8dcc8c499dace2bbc9db9d7d7c 已推送 main；Code Quality run 38238148317 成功；Release On Version Bump run 38238148334 成功，Release 3.4.0 已公开发布并指向该提交，资产 komari-theme-Glassmorphism-build-328d71b.zip 7,612,048 bytes，GitHub digest / 下载 SHA-256 1d32a368b0f5db9db1460402db37ce0bcd8646b0b8459c77ec0ec7372cb4297b。Visual Regression run 38238148469 在 Linux runner 失败，公开页面未提供日志且匿名 artifact 下载要求认证；本地同一套 37/37 已通过，不能将远端视觉检查标为成功。
 
 - 状态：done，A4 可选三网曲线、性能 / 手机优化、致谢及主题包完成（2026-10-12）
 - 用户要求：三网小曲线做成可开启设置，默认保持原展示；性能与外观按收益融合；制作过程分阶段 Git 存档；致谢写作者链接及吸收代码。

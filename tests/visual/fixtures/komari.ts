@@ -29,6 +29,8 @@ export interface VisualFixtureOptions {
   generalCardKeys?: string[]
   fullChartDashboard?: boolean
   threeNetPing?: boolean
+  threeNetSparkline?: boolean
+  themeSettingsOverrides?: Record<string, unknown>
   threeNetTaskIds?: string
   threeNetNodeBindings?: string
   livePingOffset?: number
@@ -399,7 +401,8 @@ export async function installKomariFixture(page: Page, options: VisualFixtureOpt
     ...(options.threeNetPing
       ? {
           threeNetPingEnabled: true,
-          threeNetPingTaskIds: options.threeNetTaskIds ?? '',
+          threeNetPingSparkline: options.threeNetSparkline ?? true,
+          threeNetPingTaskIds: options.threeNetTaskIds ?? '[20,10,30]',
           threeNetPingNodeTaskBindings: options.threeNetNodeBindings ?? '{}',
         }
       : {}),
@@ -446,7 +449,7 @@ export async function installKomariFixture(page: Page, options: VisualFixtureOpt
         ping_record_preserve_time: options.pingRetentionHours ?? 720,
         sitename: 'Komari Visual Lab',
         theme: 'Glassmorphism',
-        theme_settings: settings,
+        theme_settings: { ...settings, ...options.themeSettingsOverrides },
         visitor_audit_enabled: false,
       },
     }),

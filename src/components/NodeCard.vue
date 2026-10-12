@@ -450,7 +450,7 @@ function hasRegion(region: string | null | undefined): boolean {
         </div>
 
         <!-- 延迟 + 丢包 -->
-        <NodeThreeNetPing v-if="appStore.threeNetPingEnabled" :node="props.node" :stats="pingStats" :enabled="props.pingEnabled" @open="emit('pingClick')" />
+        <NodeThreeNetPing v-if="appStore.threeNetPingEnabled || appStore.threeNetPingSparkline" :node="props.node" :stats="pingStats" :enabled="props.pingEnabled" @open="emit('pingClick')" />
         <div v-else class="grid grid-cols-2 gap-1.5">
           <button
             type="button"
