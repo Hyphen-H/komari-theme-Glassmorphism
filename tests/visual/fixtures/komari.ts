@@ -27,6 +27,7 @@ export interface VisualFixtureOptions {
   missingCpuMetricHistory?: boolean
   pingTaskOrdering?: boolean
   generalCardKeys?: string[]
+  fullChartDashboard?: boolean
 }
 
 function uuidFor(index: number): string {
@@ -359,6 +360,7 @@ export async function installKomariFixture(page: Page, options: VisualFixtureOpt
     homeQuickControlsEnabled: true,
     homeQuickControlPreset: '完整',
     homeToolsEnabled: true,
+    ...(options.fullChartDashboard ? { chartDashboardPreset: '完整', gpuChartEnabled: true } : {}),
     generalCardPreset: '自定义',
     generalCardKeys: (options.generalCardKeys ?? (
       options.earthRenderer === 'tiled'

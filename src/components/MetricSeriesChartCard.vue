@@ -2,6 +2,9 @@
 import { computed } from 'vue'
 import VChart from 'vue-echarts'
 import { CardX } from '@/components/ui/card-x'
+import { METRIC_CHART_GRID, METRIC_CHART_LEGEND } from '@/constants/chart'
+import { useAppStore } from '@/stores/app'
+import { getMetricChartTheme } from '@/utils/chartPalette'
 import { formatBytes } from '@/utils/helper'
 import MetricChartHeader from './MetricChartHeader.vue'
 import '@/utils/echarts'
@@ -55,6 +58,8 @@ function formatMetricValue(value: number | null | undefined, kind: MetricValueKi
 }
 
 const primaryKind = computed<MetricValueKind>(() => props.series[0]?.kind ?? 'count')
+const appStore = useAppStore()
+const chartThemeColors = computed(() => getMetricChartTheme(appStore.isDark))
 
 const latestText = computed(() => {
   if (props.latest)
@@ -74,10 +79,10 @@ const chartOption = computed(() => ({
   tooltip: {
     trigger: 'axis',
     confine: true,
-    backgroundColor: 'var(--color-popover)',
-    borderColor: 'var(--color-border)',
+    backgroundColor: chartThemeColors.value.tooltipBg,
+    borderColor: chartThemeColors.value.borderColor,
     borderWidth: 1,
-    textStyle: { color: 'var(--color-popover-foreground)', fontSize: 12 },
+    textStyle: { color: chartThemeColors.value.text, fontSize: 12 },
     formatter: (params: unknown) => {
       const items = params as Array<{ axisValueLabel?: string, color: string, data: [string, number | null], seriesIndex: number, seriesName: string }>
       if (!items.length)
@@ -91,18 +96,16 @@ const chartOption = computed(() => ({
     },
   },
   legend: {
-    type: 'scroll',
-    bottom: 2,
-    itemWidth: 10,
-    itemHeight: 8,
-    textStyle: { color: 'var(--color-muted-foreground)', fontSize: 10 },
+    ...METRIC_CHART_LEGEND,
+    textStyle: { ...METRIC_CHART_LEGEND.textStyle, color: chartThemeColors.value.textSecondary },
+    pageTextStyle: { color: chartThemeColors.value.textSecondary },
   },
-  grid: { top: 20, right: 18, bottom: 48, left: 58 },
+  grid: METRIC_CHART_GRID,
   xAxis: {
     type: 'time',
-    axisLine: { lineStyle: { color: 'var(--color-border)' } },
+    axisLine: { lineStyle: { color: chartThemeColors.value.borderColor } },
     axisTick: { show: false },
-    axisLabel: { color: 'var(--color-muted-foreground)', fontSize: 10, hideOverlap: true },
+    axisLabel: { color: chartThemeColors.value.textSecondary, fontSize: 11, margin: 12, hideOverlap: true },
     splitLine: { show: false },
   },
   yAxis: {
@@ -112,11 +115,11 @@ const chartOption = computed(() => ({
     axisLine: { show: false },
     axisTick: { show: false },
     axisLabel: {
-      color: 'var(--color-muted-foreground)',
-      fontSize: 10,
+      color: chartThemeColors.value.textSecondary,
+      fontSize: 11,
       formatter: (value: number) => formatMetricValue(value, primaryKind.value),
     },
-    splitLine: { lineStyle: { color: 'var(--color-border)', opacity: 0.45 } },
+    splitLine: { lineStyle: { color: chartThemeColors.value.splitLineColor, type: 'dashed' } },
   },
   series: props.series.map(item => ({
     name: item.name,
@@ -132,6 +135,7 @@ const chartOption = computed(() => ({
 
 <template>
   <CardX
+    data-metric-series-chart-card
     size="small"
     class="bg-background/50 border-none hover:bg-background transition-all rounded-md"
     :style="{ order }"

@@ -257,3 +257,79 @@ test('detail ping tasks follow the backend task order', async ({ page }) => {
   await expect(taskCards.nth(2)).toHaveAttribute('data-ping-task-id', '20')
   await expect(taskCards).toContainText(['浙江移动', '浙江联通', '浙江电信'])
 })
+
+for (const scenario of [
+  { name: 'light desktop', width: 1280, height: 720, dark: false, touch: false },
+  { name: 'dark desktop', width: 1280, height: 720, dark: true, touch: false },
+  { name: 'dark mobile', width: 390, height: 844, dark: true, touch: true },
+]) {
+  test(`ping dialog tooltips stay above the modal on ${scenario.name}`, async ({ browser }) => {
+    const context = await browser.newContext({
+      viewport: { width: scenario.width, height: scenario.height },
+      hasTouch: scenario.touch,
+      isMobile: scenario.touch,
+    })
+    const page = await context.newPage()
+    try {
+      await installKomariFixture(page, { dark: scenario.dark, hideEarth: true, pingTaskOrdering: true })
+      await openStablePage(page)
+      await page.getByRole('button', { name: '主控-洛杉矶 延迟监测' }).click()
+      const dialog = page.getByRole('dialog', { name: '主控-洛杉矶 延迟 / 丢包' })
+      const taskCard = dialog.locator('[data-ping-task-id="30"]')
+      const taskTrigger = taskCard.locator('[data-slot="tooltip-trigger"]')
+      const tooltip = page.locator('[data-slot="tooltip-content"]')
+      const openTooltip = async (trigger: typeof taskTrigger): Promise<void> => {
+        if (scenario.touch)
+          await trigger.tap()
+        else
+          await trigger.hover()
+      }
+      const expectUncoveredTooltip = async (): Promise<void> => {
+        await expect(tooltip).toBeVisible()
+        await expect.poll(() => tooltip.evaluate((element) => {
+          const rect = element.getBoundingClientRect()
+          const insideViewport = rect.left >= 0 && rect.top >= 0
+            && rect.right <= window.innerWidth && rect.bottom <= window.innerHeight
+          const points = [0.25, 0.75].flatMap(x => [0.25, 0.75].map(y => [
+            rect.left + rect.width * x,
+            rect.top + rect.height * y,
+          ]))
+          return insideViewport && points.every(([x, y]) => {
+            const topElement = document.elementFromPoint(x!, y!)
+            return topElement !== null && element.contains(topElement)
+          })
+        })).toBe(true)
+      }
+
+      await expect(taskCard).toBeVisible()
+      await openTooltip(taskTrigger)
+      await expect(tooltip).toContainText('最小')
+      await expect(tooltip).toContainText('平均')
+      await expectUncoveredTooltip()
+      await expect(taskCard).not.toHaveClass(/opacity-30/)
+      await page.screenshot({ path: `test-results/ping-tooltip-${scenario.name.replaceAll(' ', '-')}.png` })
+
+      if (!scenario.touch) {
+        await page.mouse.move(0, 0)
+        await expect(tooltip).toHaveCount(0)
+      }
+      const smoothTrigger = dialog.getByText('平滑峰值', { exact: true }).locator('..').locator('[data-slot="tooltip-trigger"]')
+      await openTooltip(smoothTrigger)
+      await expect(tooltip).toContainText('EWMA')
+      await expectUncoveredTooltip()
+
+      await dialog.getByRole('button', { name: '关闭', exact: true }).click()
+      await expect(dialog).toHaveCount(0)
+      await expect(tooltip).toHaveCount(0)
+
+      await page.goto('/instance/00000000-0000-4000-8000-000000000001')
+      const detailTrigger = page.locator('[data-ping-task-id="30"] [data-slot="tooltip-trigger"]')
+      await openTooltip(detailTrigger)
+      await expect(tooltip).toContainText('平均')
+      await expectUncoveredTooltip()
+    }
+    finally {
+      await context.close()
+    }
+  })
+}

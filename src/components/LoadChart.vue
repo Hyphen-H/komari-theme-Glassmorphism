@@ -17,11 +17,12 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { loadNodeLoadRecords, useNodeLoadStats } from '@/composables/useNodeLoadStats'
+import { METRIC_CHART_GRID, METRIC_CHART_LEGEND } from '@/constants/chart'
 import { LOAD_RECORD_MAX_COUNT } from '@/constants/load'
 import { loadMetricDefinitions, loadPublicPingTasks, queryMetrics } from '@/services/metrics.service'
 import { useAppStore } from '@/stores/app'
 import { useNodesStore } from '@/stores/nodes'
-import { getChartSeriesPalette, getLoadChartPalette } from '@/utils/chartPalette'
+import { getChartSeriesPalette, getLoadChartPalette, getMetricChartTheme } from '@/utils/chartPalette'
 import { gpuUsageFromStatus } from '@/utils/gpuHelper'
 import { formatBytes, formatBytesSplit } from '@/utils/helper'
 import { comparePingTaskOrder, createPingTaskOrderMap, metricTags, normalizeMetricSeriesList } from '@/utils/metricSeries'
@@ -101,16 +102,7 @@ interface CustomRange {
 }
 
 // 图表主题相关颜色
-const chartThemeColors = computed(() => ({
-  text: isDark.value ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.85)',
-  textSecondary: isDark.value ? 'rgba(255, 255, 255, 0.55)' : 'rgba(0, 0, 0, 0.55)',
-  textTertiary: isDark.value ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.35)',
-  borderColor: isDark.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-  splitLineColor: isDark.value ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
-  tooltipBg: isDark.value ? 'rgba(40, 40, 40, 0.95)' : 'rgba(255, 255, 255, 0.8)',
-  tooltipShadow: isDark.value ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.06)',
-  crosshairColor: isDark.value ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
-}))
+const chartThemeColors = computed(() => getMetricChartTheme(isDark.value))
 
 // 通用 Tooltip 配置
 const baseTooltipConfig = computed(() => ({
@@ -142,9 +134,11 @@ const baseTooltipConfig = computed(() => ({
   },
 }))
 
-// 图表边距配置
-const chartMargin = { top: 30, right: 24, bottom: 32, left: 56 }
-const chartMarginWithLegend = { top: 30, right: 24, bottom: 52, left: 56 }
+const baseLegendConfig = computed(() => ({
+  ...METRIC_CHART_LEGEND,
+  textStyle: { ...METRIC_CHART_LEGEND.textStyle, color: chartThemeColors.value.textSecondary },
+  pageTextStyle: { color: chartThemeColors.value.textSecondary },
+}))
 
 // 视图选项
 const presetViews = [
@@ -958,7 +952,8 @@ const cpuChartOption = computed(() => ({
       return html
     },
   },
-  grid: chartMargin,
+  legend: { ...baseLegendConfig.value, data: ['CPU', '负载'] },
+  grid: METRIC_CHART_GRID,
   xAxis: baseXAxisConfig.value,
   yAxis: [
     {
@@ -1060,13 +1055,10 @@ const memoryChartOption = computed(() => ({
     },
   },
   legend: {
+    ...baseLegendConfig.value,
     data: ['RAM', 'RAM 总量', 'Swap', 'Swap 总量'],
-    bottom: 4,
-    itemWidth: 10,
-    itemHeight: 8,
-    textStyle: { fontSize: 10, color: chartThemeColors.value.textSecondary },
   },
-  grid: chartMarginWithLegend,
+  grid: METRIC_CHART_GRID,
   xAxis: baseXAxisConfig.value,
   yAxis: {
     ...baseYAxisConfig.value,
@@ -1158,13 +1150,10 @@ const diskChartOption = computed(() => ({
     },
   },
   legend: {
+    ...baseLegendConfig.value,
     data: ['磁盘已用', '磁盘总量'],
-    bottom: 4,
-    itemWidth: 10,
-    itemHeight: 8,
-    textStyle: { fontSize: 10, color: chartThemeColors.value.textSecondary },
   },
-  grid: chartMarginWithLegend,
+  grid: METRIC_CHART_GRID,
   xAxis: baseXAxisConfig.value,
   yAxis: {
     ...baseYAxisConfig.value,
@@ -1238,15 +1227,10 @@ const networkChartOption = computed(() => ({
     },
   },
   legend: {
+    ...baseLegendConfig.value,
     data: ['下载', '上传'],
-    bottom: 4,
-    itemWidth: 12,
-    itemHeight: 12,
-    itemGap: 20,
-    icon: 'roundRect',
-    textStyle: { fontSize: 11, color: chartThemeColors.value.textSecondary },
   },
-  grid: chartMarginWithLegend,
+  grid: METRIC_CHART_GRID,
   xAxis: baseXAxisConfig.value,
   yAxis: {
     ...baseYAxisConfig.value,
@@ -1333,15 +1317,10 @@ const gpuChartOption = computed(() => ({
     },
   },
   legend: {
+    ...baseLegendConfig.value,
     data: ['GPU 使用率', '显存使用率', ...gpuDeviceUsageEChartSeries.value.map(series => series.name)],
-    bottom: 4,
-    itemWidth: 12,
-    itemHeight: 12,
-    itemGap: 20,
-    icon: 'roundRect',
-    textStyle: { fontSize: 11, color: chartThemeColors.value.textSecondary },
   },
-  grid: chartMarginWithLegend,
+  grid: METRIC_CHART_GRID,
   xAxis: baseXAxisConfig.value,
   yAxis: {
     ...baseYAxisConfig.value,
@@ -1434,15 +1413,10 @@ const connectionsChartOption = computed(() => ({
     },
   },
   legend: {
+    ...baseLegendConfig.value,
     data: ['TCP', 'UDP'],
-    bottom: 4,
-    itemWidth: 12,
-    itemHeight: 12,
-    itemGap: 20,
-    icon: 'roundRect',
-    textStyle: { fontSize: 11, color: chartThemeColors.value.textSecondary },
   },
-  grid: chartMarginWithLegend,
+  grid: METRIC_CHART_GRID,
   xAxis: baseXAxisConfig.value,
   yAxis: {
     ...baseYAxisConfig.value,
@@ -1502,7 +1476,8 @@ const processChartOption = computed(() => ({
       return html
     },
   },
-  grid: chartMargin,
+  legend: { ...baseLegendConfig.value, data: ['进程数'] },
+  grid: METRIC_CHART_GRID,
   xAxis: baseXAxisConfig.value,
   yAxis: {
     ...baseYAxisConfig.value,
@@ -1589,7 +1564,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div data-load-chart-dashboard class="flex flex-col gap-4">
     <!-- 时间选择器 -->
     <div class="flex flex-col items-center gap-2">
       <Tabs v-model="selectedView" class="w-full items-center">
