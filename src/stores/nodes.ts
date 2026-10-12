@@ -68,6 +68,7 @@ export interface NodeData {
   uptime: number
   message?: string
   status_updated_at?: string
+  ping?: NodeStatus['ping']
 }
 
 /** WebSocket 连接状态 */
@@ -75,6 +76,7 @@ export type WsConnectionState = 'disconnected' | 'connecting' | 'connected' | 'r
 
 /** 状态数据（用于更新） */
 interface StatusData {
+  ping?: NodeStatus['ping']
   online: boolean
   time: string
   cpu: number
@@ -232,6 +234,7 @@ const useNodesStore = defineStore('nodes', () => {
    * 只会重算真正变化的字段所对应的视图；未变化的字段连依赖都不会触发。
    */
   function applyStatus(node: NodeData, status: StatusData): void {
+    node.ping = status.ping
     if (node.online !== status.online)
       node.online = status.online
     if (node.time !== status.time)
