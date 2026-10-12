@@ -19,6 +19,7 @@
 - GitHub：origin/main 已刷新，仍为 e0aedb0；gh auth status 被自动审批策略拒绝（never 无法审批），不判断 token 过期，不读取凭据。使用正常 Git 推送触发已有 release workflow，公开 REST API 验证结果。
 - 第二阶段实现：WebGL 能力检测 / 初始化及上下文丢失回退平铺地图；公网 IP 字面量与 IPv4-mapped 校验、IPv6 地理回退、权限与异步代次保护；手机 Tooltip 手势区分；可选分组计数；按后端保留期显示 7 / 15 / 30 天 Ping 范围。来源 pwremilk、3560912451zz-stack、casiuna、zfloong 已写入 README、融合记录与 THIRD-PARTY-NOTICES。
 - 新增验证：fork-followup 13/13、三网与图例 / Issue #59 聚焦 24/24；随后完整视觉矩阵 37/37（49.4 秒）；lint、vue-tsc、build、diff --check 已通过。包为 3.4.0，773 entries，SHA-256 AA9A8DF26475B60B277B54726706D70EB6A99F5FBC925F1ECE6869F73686CF4C。
+- 发布证据：提交 328d71b18ec9df8dcc8c499dace2bbc9db9d7d7c 已推送 main；Code Quality run 38238148317 成功；Release On Version Bump run 38238148334 成功，Release 3.4.0 已公开发布并指向该提交，资产 komari-theme-Glassmorphism-build-328d71b.zip 7,612,048 bytes，GitHub digest / 下载 SHA-256 1d32a368b0f5db9db1460402db37ce0bcd8646b0b8459c77ec0ec7372cb4297b。Visual Regression run 38238148469 在 Linux runner 失败，公开页面未提供日志且匿名 artifact 下载要求认证；本地同一套 37/37 已通过，不能将远端视觉检查标为成功。
 
 - 状态：done，A4 可选三网曲线、性能 / 手机优化、致谢及主题包完成（2026-10-12）
 - 用户要求：三网小曲线做成可开启设置，默认保持原展示；性能与外观按收益融合；制作过程分阶段 Git 存档；致谢写作者链接及吸收代码。
