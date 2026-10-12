@@ -59,12 +59,13 @@
 
 ### 可选首页三网小曲线（A4）
 
-在后台 **主题设置 → 05 · 节点卡片、列表与快捷控制** 开启 **首页三网小曲线（A4）**。默认关闭，首页保持原来的延迟 / 丢包双面板，卡片默认尺寸仍为 compact。
+在后台 **主题设置 → 05 · 节点卡片、列表与快捷控制** 开启 **显示三网延迟（A4）**，选择线路，再开启 **三网新版样式**。两个开关默认关闭，卡片默认尺寸仍为 compact。
 
 - 每张卡片显示最多三条线路的名称、最近探测延迟、历史曲线和丢包率。没有实时值时使用历史平均值；负延迟显示“不可达”。
 - 鼠标悬停或手机轻点曲线查看历史时段；手机滑动仍可滚动页面，点外部收起。键盘左右方向键也可选点，Escape 关闭。点击线路名称打开完整 Ping 图表。
-- **三网任务 ID** 可填写 `20,10,30`，顺序即展示顺序；留空自动选择适用于该节点的电信 / 联通 / 移动任务，不足时补充其他任务，最多三条。
-- **各节点三网任务绑定 JSON** 可填写 `{"节点UUID":[30,20,10]}`，优先于全局设置。使用真实任务 ID，后台任务顺序或同名任务不会导致线路串线。
+- **三网延迟任务** 可选择 1～3 个任务，按选择顺序展示；没有选择时恢复总览。兼容后台返回的数字数组、JSON 字符串及旧的 `20,10,30` 格式。旧后台若将 `pingtasks` 显示为文本，可通过下方首页编辑器直接勾选，无需输入 ID。
+- 登录管理员后，点击首页顶部 **按服务器配置 Ping 任务**：可勾选全局任务或每台服务器的任务，同时切换三网和新版样式。节点绑定优先于全局，取消该节点全部选择后恢复全局。保存会验证登录，并合并最新配置、保留其他节点及无关设置。
+- 新版样式直接移植 towersip 的共享网格列、16px 小曲线、20px 行高、状态色和名称缩写。卡片宽度及列数沿用原尺寸设置，三条曲线在 compact 下仅比默认卡片增高 24px；关闭新版样式可使用下游的三组延迟 / 丢包方柱。
 - 曲线复用首页最近一小时的 Ping 摘要历史，以最多 20 个时段显示平均延迟和丢包；缺测保留断线，未记录历史时仍可显示实时值。
 
 本次同时改进公共任务缓存、后台暂停刷新、手机安全区与详情头部布局，以及图例对齐、同名任务图例和浮窗文本转义。来源、取舍与验证见 [融合记录](docs/fork-integration-2026-10-12.md)。
@@ -765,15 +766,15 @@ dist/
 
 感谢以下衍生项目作者分享优化代码。本轮按主线架构移植或改写了以下部分，具体来源 SHA 和实现差异见 [融合记录](docs/fork-integration-2026-10-12.md)。
 
-| 作者 / 项目                                                                                                                                                  | 本轮吸收的代码或设计                                                                                                                                                |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [towersip](https://github.com/towersip) · [komari-theme-Glassmorphism](https://github.com/towersip/komari-theme-Glassmorphism)                               | A4 三网 SVG 小曲线、历史时段选择、全局及按节点任务 ID 绑定、实时值与历史计算分离；参考 iOS 安全区处理。主线默认关闭，并改为保留真实极值与断线、区分手机轻点和滑动。 |
-| [thinkemm](https://github.com/thinkemm) · [komari-theme-Glassmorphism](https://github.com/thinkemm/komari-theme-Glassmorphism)                               | 公共 Ping 任务列表 TTL 缓存、历史请求的任务信息取消清理，以及将 Ping 最新状态保留在响应式节点对象中。                                                               |
-| [VoyagerProbe](https://github.com/VoyagerProbe) · [Glassmorphism-Plus](https://github.com/VoyagerProbe/Glassmorphism-Plus)                                   | Ping 浮窗 HTML 转义、同名任务唯一图例、保留缺测的 EWMA 展示平滑、窄屏轴标签避让；参考共享调度 / 后台暂停恢复与手机头部、弹窗布局，按主线服务边界重写。              |
-| [pwremilk](https://github.com/pwremilk) · [komari-theme-Glassmorphism-custom](https://github.com/pwremilk/komari-theme-Glassmorphism-custom)                 | WebGL 不可用时回退平铺地图；主线扩展为按渲染器检测、初始化失败和上下文丢失回退，并同步地图布局。                                                                    |
-| [3560912451zz-stack](https://github.com/3560912451zz-stack) · [komari-theme-Glassmorphism](https://github.com/3560912451zz-stack/komari-theme-Glassmorphism) | 地理查询过滤非公网 IP、无效零坐标和过期结果；主线重写完整 IPv4 / IPv6 字面量解析、映射地址过滤和查询代次保护。                                                      |
-| [casiuna](https://github.com/casiuna) · [Glassmorphism-Enhanced](https://github.com/casiuna/Glassmorphism-Enhanced)                                          | 城市查询从 IPv4 回退 IPv6；保留主线登录权限、缓存、并发去重及国家级定位兜底。                                                                                       |
-| [zfloong](https://github.com/zfloong) · [komari-theme-Glassmorphism](https://github.com/zfloong/komari-theme-Glassmorphism)                                  | Ping 的 7 / 15 / 30 天快捷范围；主线保留原 6 / 12 小时并按后端保留时间过滤。                                                                                        |
+| 作者 / 项目                                                                                                                                                  | 本轮吸收的代码或设计                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [towersip](https://github.com/towersip) · [komari-theme-Glassmorphism](https://github.com/towersip/komari-theme-Glassmorphism)                               | A4 三网 SVG 小曲线、共享网格列 / 行高 / 状态配色 / 名称缩写、历史时段浮窗、独立样式开关及全局 / 按服务器任务选择与保存；参考 iOS 安全区处理。主线默认关闭，保留真实极值与断线、区分手机轻点和滑动，并适配保存权限与配置合并。 |
+| [thinkemm](https://github.com/thinkemm) · [komari-theme-Glassmorphism](https://github.com/thinkemm/komari-theme-Glassmorphism)                               | 公共 Ping 任务列表 TTL 缓存、历史请求的任务信息取消清理，以及将 Ping 最新状态保留在响应式节点对象中。                                                                                                                         |
+| [VoyagerProbe](https://github.com/VoyagerProbe) · [Glassmorphism-Plus](https://github.com/VoyagerProbe/Glassmorphism-Plus)                                   | Ping 浮窗 HTML 转义、同名任务唯一图例、保留缺测的 EWMA 展示平滑、窄屏轴标签避让；参考共享调度 / 后台暂停恢复与手机头部、弹窗布局，按主线服务边界重写。                                                                        |
+| [pwremilk](https://github.com/pwremilk) · [komari-theme-Glassmorphism-custom](https://github.com/pwremilk/komari-theme-Glassmorphism-custom)                 | WebGL 不可用时回退平铺地图；主线扩展为按渲染器检测、初始化失败和上下文丢失回退，并同步地图布局。                                                                                                                              |
+| [3560912451zz-stack](https://github.com/3560912451zz-stack) · [komari-theme-Glassmorphism](https://github.com/3560912451zz-stack/komari-theme-Glassmorphism) | 地理查询过滤非公网 IP、无效零坐标和过期结果；主线重写完整 IPv4 / IPv6 字面量解析、映射地址过滤和查询代次保护。                                                                                                                |
+| [casiuna](https://github.com/casiuna) · [Glassmorphism-Enhanced](https://github.com/casiuna/Glassmorphism-Enhanced)                                          | 城市查询从 IPv4 回退 IPv6；保留主线登录权限、缓存、并发去重及国家级定位兜底。                                                                                                                                                 |
+| [zfloong](https://github.com/zfloong) · [komari-theme-Glassmorphism](https://github.com/zfloong/komari-theme-Glassmorphism)                                  | Ping 的 7 / 15 / 30 天快捷范围；主线保留原 6 / 12 小时并按后端保留时间过滤。                                                                                                                                                  |
 
 本轮还参考 thinkemm 的分组计数和 VoyagerProbe 的手机手势过滤，将计数做成默认关闭的配置，并适配现有 reka-ui 提示组件。
 

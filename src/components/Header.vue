@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
-import { computed, inject, ref } from 'vue'
+import { computed, defineAsyncComponent, inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,8 @@ const { record: recordVisitorEvent } = useVisitorAudit()
 const isScrolled = inject<ReturnType<typeof ref<boolean>>>('isScrolled', ref(false))
 
 const siteFavicon = ref('/favicon.ico')
+const pingSettingsOpen = ref(false)
+const ThemePingSettings = defineAsyncComponent(() => import('@/components/ThemePingSettings.vue'))
 
 const actionButtons = computed(() => {
   const themeTitleMap = {
@@ -40,6 +42,14 @@ const actionButtons = computed(() => {
       icon: 'tabler:tools',
       action: 'toggleHomeTools',
       pressed: appStore.homeAdvancedToolsVisible,
+    })
+  }
+
+  if (router.currentRoute.value.name === 'home' && appStore.privateFeaturesAllowed) {
+    buttons.push({
+      title: '按服务器配置 Ping 任务',
+      icon: 'tabler:server-cog',
+      action: 'openThreeNetPingSettings',
     })
   }
 
@@ -73,6 +83,9 @@ function handleButtonClick(action: string) {
     case 'toggleHomeTools':
       appStore.homeAdvancedToolsVisible = !appStore.homeAdvancedToolsVisible
       break
+    case 'openThreeNetPingSettings':
+      pingSettingsOpen.value = true
+      break
     case 'jumpToSetting':
       void recordVisitorEvent({
         event: 'admin_entry_click',
@@ -90,6 +103,7 @@ const sitename = computed(() => appStore.publicSettings?.sitename || 'Komari Mon
 <template>
   <!-- 访客 IP 组件，全局悬浮 -->
   <VisitorInfo v-if="!appStore.loading && appStore.visitorInfoEnabled" />
+  <ThemePingSettings v-if="pingSettingsOpen" :open="pingSettingsOpen" @update:open="pingSettingsOpen = $event" />
 
   <div
     class="transition-all duration-200 top-0 sticky z-10 border-b border-transparent pt-[env(safe-area-inset-top)]"
