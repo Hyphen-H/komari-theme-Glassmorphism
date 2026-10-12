@@ -2,7 +2,7 @@
   "name": "Komari Glassmorphism",
   "short": "Glassmorphism",
   "description": "A Glassmorphism theme for Komari",
-  "version": "3.3.8",
+  "version": "3.4.0",
   "author": "sanrokamlan",
   "url": "https://github.com/sanrokamlan-prog/komari-theme-Glassmorphism",
   "preview": "preview.png",
@@ -43,6 +43,7 @@
       { "key": "disablePageAnimation", "name": "减弱过渡动画", "type": "switch", "default": false, "help": "减少页面过渡动画效果，提升访问速度和响应性" },
 
       { "name": "05 · 节点卡片、列表与快捷控制", "type": "title" },
+      { "key": "groupNodeCountEnabled", "name": "分组标签显示节点数", "type": "switch", "default": false, "help": "显示当前可见节点的分组总数（包含离线，不随搜索改变）；未登录时不计入隐藏节点。多组节点分别计入所属分组。" },
       { "key": "threeNetPingEnabled", "name": "首页三网小曲线（A4）", "type": "switch", "default": false, "help": "默认关闭，保留现有延迟/丢包卡片。开启后显示三条线路的延迟曲线和丢包率；鼠标悬停或手机轻点曲线查看历史时段，点击线路名称打开完整图表。" },
       { "key": "threeNetPingTaskIds", "name": "三网任务 ID", "type": "string", "default": "", "help": "按展示顺序填写最多 3 个真实 Ping 任务 ID，逗号分隔，如 20,10,30。留空时自动选择电信、联通、移动；没有匹配运营商名称则取前三个适用于该节点的任务。" },
       { "key": "threeNetPingNodeTaskBindings", "name": "各节点三网任务绑定 JSON", "type": "richtext", "default": "{}", "help": "可选，优先于全局 ID。格式：{\"节点UUID\":[20,10,30]}。按任务 ID 绑定，任务排序变化不会串线。未绑定的节点使用全局配置或自动选择。" },

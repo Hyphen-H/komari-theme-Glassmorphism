@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useTouchTooltipTrigger } from '@/composables/useTouchTooltipTrigger'
 import { PING_RECORD_MAX_COUNT } from '@/constants/load'
 import { loadPingRecordsWithTasks } from '@/services/history.service'
 import { loadPingMetricStats, loadPublicPingTasks, queryMetrics } from '@/services/metrics.service'
@@ -60,6 +61,9 @@ const presetViews = [
   { label: '6 小时', hours: 6 },
   { label: '12 小时', hours: 12 },
   { label: '1 天', hours: 24 },
+  { label: '7 天', hours: 168 },
+  { label: '15 天', hours: 360 },
+  { label: '30 天', hours: 720 },
 ]
 const CUSTOM_VIEW_LABEL = '自定义'
 const DEFAULT_CUSTOM_RANGE_HOURS = 24
@@ -160,6 +164,10 @@ const cutPeak = ref(false)
 const isTouchTooltipMode = ref(false)
 const activeTaskTooltipId = ref<number | null>(null)
 const smoothInfoTooltipOpen = ref(false)
+const touchTooltip = useTouchTooltipTrigger(isTouchTooltipMode, () => {
+  activeTaskTooltipId.value = null
+  smoothInfoTooltipOpen.value = false
+})
 
 const chartMargin = { top: 30, right: 24, bottom: 52, left: 56 }
 let coarsePointerMediaQuery: MediaQueryList | null = null
@@ -177,6 +185,8 @@ function syncTouchTooltipMode() {
 }
 
 function setTaskTooltipOpen(taskId: number, open: boolean) {
+  if (isTouchTooltipMode.value)
+    return
   activeTaskTooltipId.value = open ? taskId : activeTaskTooltipId.value === taskId ? null : activeTaskTooltipId.value
 }
 
@@ -714,6 +724,7 @@ const pingChartOption = computed(() => {
 // ==================== 生命周期 ====================
 
 watch(selectedView, () => {
+  touchTooltip.reset()
   selectedTaskIds.value = []
   if (isCustomRange.value)
     ensureDefaultCustomRange()
@@ -849,7 +860,12 @@ onBeforeUnmount(() => {
                     @update:open="(open) => setTaskTooltipOpen(task.id, open)"
                   >
                     <TooltipTrigger as-child>
-                      <Button variant="ghost" size="icon-xs" class="text-slate-500" @click.stop="toggleTaskTooltip(task.id)">
+                      <Button
+                        data-ping-tooltip-trigger variant="ghost" size="icon-xs" class="text-slate-500"
+                        @pointerdown="touchTooltip.pointerDown" @pointermove="touchTooltip.pointerMove" @pointercancel="touchTooltip.cancel"
+                        @pointerup="touchTooltip.pointerUp($event, () => toggleTaskTooltip(task.id))"
+                        @click="touchTooltip.click($event, () => toggleTaskTooltip(task.id))"
+                      >
                         <Icon icon="carbon:information" :width="14" :height="14" />
                       </Button>
                     </TooltipTrigger>
@@ -935,10 +951,15 @@ onBeforeUnmount(() => {
               </Button>
               <Tooltip
                 :open="isTouchTooltipMode ? smoothInfoTooltipOpen : undefined"
-                @update:open="(open) => smoothInfoTooltipOpen = open"
+                @update:open="(open) => { if (!isTouchTooltipMode) smoothInfoTooltipOpen = open }"
               >
                 <TooltipTrigger as-child>
-                  <Button variant="ghost" size="icon-xs" class="text-slate-500" @click.stop="toggleSmoothInfoTooltip">
+                  <Button
+                    data-ping-tooltip-trigger variant="ghost" size="icon-xs" class="text-slate-500"
+                    @pointerdown="touchTooltip.pointerDown" @pointermove="touchTooltip.pointerMove" @pointercancel="touchTooltip.cancel"
+                    @pointerup="touchTooltip.pointerUp($event, toggleSmoothInfoTooltip)"
+                    @click="touchTooltip.click($event, toggleSmoothInfoTooltip)"
+                  >
                     <Icon icon="carbon:information" :width="14" :height="14" />
                   </Button>
                 </TooltipTrigger>

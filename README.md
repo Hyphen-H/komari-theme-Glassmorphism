@@ -37,7 +37,7 @@
 
 | 项目     | 说明                                                      |
 | :------- | :-------------------------------------------------------- |
-| 当前版本 | **v3.3.8**                                                |
+| 当前版本 | **v3.4.0**                                                |
 | 主题定位 | Komari Monitor 可导入 zip 主题，不是普通 Web App 部署包   |
 | 视觉风格 | 毛玻璃卡片、动态背景、浅色 / 深色 / 北京时间自动日夜模式  |
 | 数据能力 | Metric Store 优先，旧接口自动 fallback，兼容 Komari 1.2.x |
@@ -48,7 +48,16 @@
 
 ---
 
-## 📡 可选首页三网小曲线（A4）
+## 📡 v3.4.0 · 三网小曲线与兼容性优化
+
+- 修复 Issue [#59](https://github.com/sanrokamlan-prog/komari-theme-Glassmorphism/issues/59)：弹窗内任务提示保持可见并避让屏幕边缘。
+- CPU / 负载、进程补齐图例，统一所有指标卡片图例、图标尺寸和水平对齐；手机头部、弹窗和安全区同步适配。
+- 公共 Ping 任务缓存与共享刷新减少重复请求，后台 / 离线暂停，恢复后刷新；实时状态继续更新。
+- 地球在 WebGL 不支持、初始化失败或上下文丢失时自动显示平铺地图；城市定位过滤非公网 IP 和无效坐标，支持 IPv6 回退并丢弃过期查询结果。访客仍可看国家地图，外部城市查询遵循登录权限。
+- 手机任务提示支持再次轻点关闭，滑动 / 长按不误开。Ping 增加 7 / 15 / 30 天快捷范围，按后端保留时间显示，保留原 6 / 12 小时。
+- 新增 **分组标签显示节点数量**（同在设置第 05 节），默认关闭，计入离线节点、多分组节点分别计数，访客不统计隐藏节点。
+
+### 可选首页三网小曲线（A4）
 
 在后台 **主题设置 → 05 · 节点卡片、列表与快捷控制** 开启 **首页三网小曲线（A4）**。默认关闭，首页保持原来的延迟 / 丢包双面板，卡片默认尺寸仍为 compact。
 
@@ -756,11 +765,17 @@ dist/
 
 感谢以下衍生项目作者分享优化代码。本轮按主线架构移植或改写了以下部分，具体来源 SHA 和实现差异见 [融合记录](docs/fork-integration-2026-10-12.md)。
 
-| 作者 / 项目                                                                                                                    | 本轮吸收的代码或设计                                                                                                                                                |
-| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [towersip](https://github.com/towersip) · [komari-theme-Glassmorphism](https://github.com/towersip/komari-theme-Glassmorphism) | A4 三网 SVG 小曲线、历史时段选择、全局及按节点任务 ID 绑定、实时值与历史计算分离；参考 iOS 安全区处理。主线默认关闭，并改为保留真实极值与断线、区分手机轻点和滑动。 |
-| [thinkemm](https://github.com/thinkemm) · [komari-theme-Glassmorphism](https://github.com/thinkemm/komari-theme-Glassmorphism) | 公共 Ping 任务列表 TTL 缓存、历史请求的任务信息取消清理，以及将 Ping 最新状态保留在响应式节点对象中。                                                               |
-| [VoyagerProbe](https://github.com/VoyagerProbe) · [Glassmorphism-Plus](https://github.com/VoyagerProbe/Glassmorphism-Plus)     | Ping 浮窗 HTML 转义、同名任务唯一图例、保留缺测的 EWMA 展示平滑、窄屏轴标签避让；参考共享调度 / 后台暂停恢复与手机头部、弹窗布局，按主线服务边界重写。              |
+| 作者 / 项目                                                                                                                                                  | 本轮吸收的代码或设计                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [towersip](https://github.com/towersip) · [komari-theme-Glassmorphism](https://github.com/towersip/komari-theme-Glassmorphism)                               | A4 三网 SVG 小曲线、历史时段选择、全局及按节点任务 ID 绑定、实时值与历史计算分离；参考 iOS 安全区处理。主线默认关闭，并改为保留真实极值与断线、区分手机轻点和滑动。 |
+| [thinkemm](https://github.com/thinkemm) · [komari-theme-Glassmorphism](https://github.com/thinkemm/komari-theme-Glassmorphism)                               | 公共 Ping 任务列表 TTL 缓存、历史请求的任务信息取消清理，以及将 Ping 最新状态保留在响应式节点对象中。                                                               |
+| [VoyagerProbe](https://github.com/VoyagerProbe) · [Glassmorphism-Plus](https://github.com/VoyagerProbe/Glassmorphism-Plus)                                   | Ping 浮窗 HTML 转义、同名任务唯一图例、保留缺测的 EWMA 展示平滑、窄屏轴标签避让；参考共享调度 / 后台暂停恢复与手机头部、弹窗布局，按主线服务边界重写。              |
+| [pwremilk](https://github.com/pwremilk) · [komari-theme-Glassmorphism-custom](https://github.com/pwremilk/komari-theme-Glassmorphism-custom)                 | WebGL 不可用时回退平铺地图；主线扩展为按渲染器检测、初始化失败和上下文丢失回退，并同步地图布局。                                                                    |
+| [3560912451zz-stack](https://github.com/3560912451zz-stack) · [komari-theme-Glassmorphism](https://github.com/3560912451zz-stack/komari-theme-Glassmorphism) | 地理查询过滤非公网 IP、无效零坐标和过期结果；主线重写完整 IPv4 / IPv6 字面量解析、映射地址过滤和查询代次保护。                                                      |
+| [casiuna](https://github.com/casiuna) · [Glassmorphism-Enhanced](https://github.com/casiuna/Glassmorphism-Enhanced)                                          | 城市查询从 IPv4 回退 IPv6；保留主线登录权限、缓存、并发去重及国家级定位兜底。                                                                                       |
+| [zfloong](https://github.com/zfloong) · [komari-theme-Glassmorphism](https://github.com/zfloong/komari-theme-Glassmorphism)                                  | Ping 的 7 / 15 / 30 天快捷范围；主线保留原 6 / 12 小时并按后端保留时间过滤。                                                                                        |
+
+本轮还参考 thinkemm 的分组计数和 VoyagerProbe 的手机手势过滤，将计数做成默认关闭的配置，并适配现有 reka-ui 提示组件。
 
 相关来源均为 MIT，保留本仓库 [LICENSE](LICENSE) 中的原始版权与许可声明。
 

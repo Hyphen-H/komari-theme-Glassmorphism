@@ -15,7 +15,24 @@ Source projects (MIT):
   Escaped tooltip text, unique legends, gap-preserving display EWMA;
   shared refresh scheduling and mobile layout ideas adapted to this theme.
 
-All three source licenses carry the following copyright and permission notice,
+- pwremilk / komari-theme-Glassmorphism-custom
+  https://github.com/pwremilk/komari-theme-Glassmorphism-custom
+  Snapshot: f826ecd956848d12082cff593f7194f7ed26a6ac
+  WebGL availability fallback, extended to initialization/context-loss recovery.
+- 3560912451zz-stack / komari-theme-Glassmorphism
+  https://github.com/3560912451zz-stack/komari-theme-Glassmorphism
+  Snapshot: 3aacbda95671297e7b42c30b3a76d5e9d0bf5ea2
+  Public-IP filtering, zero-coordinate rejection and stale-result protection.
+- casiuna / Glassmorphism-Enhanced
+  https://github.com/casiuna/Glassmorphism-Enhanced
+  Snapshot: 3bb76d9fd6f86d9fe56845b12922ee75866f2ed3
+  IPv4-to-IPv6 city lookup fallback.
+- zfloong / komari-theme-Glassmorphism
+  https://github.com/zfloong/komari-theme-Glassmorphism
+  Snapshot: d6ccddbd4b619f83bdac2520bd22a3bf97f58100
+  Retention-aware 7/15/30-day Ping presets.
+
+All source licenses carry the following copyright and permission notice,
 which is retained verbatim below. Source modifications and attribution details
 are recorded in README.md and docs/fork-integration-2026-10-12.md.
 

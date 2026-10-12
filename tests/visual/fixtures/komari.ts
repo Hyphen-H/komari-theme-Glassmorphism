@@ -34,13 +34,18 @@ export interface VisualFixtureOptions {
   livePingOffset?: number
   pingGaps?: boolean
   duplicateTaskNames?: boolean
+  groupNodeCount?: boolean
+  hiddenFirstNode?: boolean
+  loggedIn?: boolean
+  publicNodeIps?: boolean
+  pingRetentionHours?: number
 }
 
 function uuidFor(index: number): string {
   return `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`
 }
 
-function buildClients(freePriceNode = false, expiryThresholds = false) {
+function buildClients(freePriceNode = false, expiryThresholds = false, multipleGroups = false) {
   return Object.fromEntries(Array.from({ length: 12 }, (_, index) => {
     const fixture = REGION_FIXTURES[index % REGION_FIXTURES.length]
     const uuid = uuidFor(index)
@@ -73,7 +78,7 @@ function buildClients(freePriceNode = false, expiryThresholds = false) {
         : expiryThresholds && index === 1
           ? '2026-08-04T12:00:00.000Z'
           : index === 6 ? '2026-08-02T00:00:00.000Z' : '2027-07-25T00:00:00.000Z',
-      group: index < 6 ? '生产' : '测试,边缘',
+      group: index < 6 ? '生产' : multipleGroups ? '测试;边缘' : '测试,边缘',
       tags: index % 2 === 0 ? 'core<jade>,visual<blue>' : 'edge<orange>',
       hidden: false,
       traffic_limit: index === 6 ? 2 * TIB : 20 * TIB,
@@ -347,7 +352,7 @@ async function handleRpc(route: Route, clientFixtures = clients, options: Visual
       result = Object.values(clientFixtures)
       break
     case 'public:getMe':
-      result = { logged_in: false }
+      result = { logged_in: options.loggedIn ?? false }
       break
     case 'public:getVersion':
     case 'common:getBackendVersion':
@@ -365,9 +370,13 @@ async function handleRpc(route: Route, clientFixtures = clients, options: Visual
 }
 
 export async function installKomariFixture(page: Page, options: VisualFixtureOptions = {}): Promise<void> {
-  const clientFixtures = options.freePriceNode || options.expiryThresholds
-    ? buildClients(options.freePriceNode, options.expiryThresholds)
-    : clients
+  const clientFixtures = buildClients(options.freePriceNode, options.expiryThresholds, options.groupNodeCount)
+  if (options.hiddenFirstNode)
+    clientFixtures[uuidFor(0)]!.hidden = true
+  if (options.publicNodeIps) {
+    clientFixtures[uuidFor(0)]!.ipv4 = '8.8.8.8'
+    clientFixtures[uuidFor(0)]!.ipv6 = '2606:4700::1111'
+  }
   const settings = {
     themeMode: options.dark ? 'dark' : 'light',
     dataUpdateInterval: options.threeNetPing ? 3 : 60,
@@ -385,6 +394,7 @@ export async function installKomariFixture(page: Page, options: VisualFixtureOpt
     homeQuickControlsEnabled: true,
     homeQuickControlPreset: '完整',
     homeToolsEnabled: true,
+    groupNodeCountEnabled: options.groupNodeCount ?? false,
     ...(options.fullChartDashboard ? { chartDashboardPreset: '完整', gpuChartEnabled: true } : {}),
     ...(options.threeNetPing
       ? {
@@ -433,7 +443,7 @@ export async function installKomariFixture(page: Page, options: VisualFixtureOpt
         private_site: false,
         record_enabled: true,
         record_preserve_time: 720,
-        ping_record_preserve_time: 720,
+        ping_record_preserve_time: options.pingRetentionHours ?? 720,
         sitename: 'Komari Visual Lab',
         theme: 'Glassmorphism',
         theme_settings: settings,
@@ -443,7 +453,7 @@ export async function installKomariFixture(page: Page, options: VisualFixtureOpt
   }))
   await page.route('**/api/me', route => route.fulfill({
     contentType: 'application/json',
-    body: JSON.stringify({ logged_in: false, username: 'visual-guest' }),
+    body: JSON.stringify({ logged_in: options.loggedIn ?? false, username: 'visual-guest' }),
   }))
   await page.route('**/api/version', route => route.fulfill({
     contentType: 'application/json',

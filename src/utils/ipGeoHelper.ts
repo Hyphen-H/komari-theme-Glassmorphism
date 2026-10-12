@@ -6,6 +6,8 @@
  * 全部失败时写入短期负缓存，调用方应回落到国家级定位。
  */
 
+import { isPublicIp } from '@/utils/ipAddress'
+
 export interface IpGeo {
   lat: number
   lng: number
@@ -18,7 +20,7 @@ export interface IpGeo {
 }
 
 const CACHE_PREFIX = 'komari-theme-emerald:ipgeo'
-const CACHE_VERSION = 3
+const CACHE_VERSION = 4
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 天
 const NEGATIVE_CACHE_TTL_MS = 6 * 60 * 60 * 1000 // 6 小时
 const IP_GEO_TIMEOUT_MS = 5000
@@ -55,6 +57,7 @@ function isValidGeo(geo: unknown): geo is IpGeo {
   const g = geo as Record<string, unknown>
   return typeof g.lat === 'number' && Number.isFinite(g.lat) && g.lat >= -90 && g.lat <= 90
     && typeof g.lng === 'number' && Number.isFinite(g.lng) && g.lng >= -180 && g.lng <= 180
+    && !(g.lat === 0 && g.lng === 0)
 }
 
 function readCache(ip: string): { geo: IpGeo | null, negative: boolean } | null {
@@ -271,7 +274,7 @@ const inflight = new Map<string, Promise<IpGeo | null>>()
  */
 export async function lookupIpGeo(ip: string): Promise<IpGeo | null> {
   const normalizedIp = ip.trim()
-  if (!normalizedIp)
+  if (!isPublicIp(normalizedIp))
     return null
 
   const cached = readCache(normalizedIp)

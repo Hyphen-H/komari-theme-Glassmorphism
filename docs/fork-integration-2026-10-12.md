@@ -1,6 +1,6 @@
 # 2026-10-12 fork 优化融合记录
 
-用户选择 A4（towersip 三网小曲线），要求默认关闭、其他优化由维护者挑选、分阶段 Git 存档并逐项致谢。本次范围为 M5 可选曲线、M2 缓存和刷新、M4 手机 / 图表布局、M3 浮窗文本转义、M6 文档与回归验证。版本仍为 3.3.8，本地开发不触发发布。
+用户选择 A4（towersip 三网小曲线），要求默认关闭、其他优化由维护者挑选、分阶段 Git 存档并逐项致谢。本次范围为 M5 可选曲线、M2 缓存和刷新、M4 手机 / 图表布局、M3 浮窗文本转义、M6 文档与回归验证。随后追加 WebGL 回退、地理地址边界、手机提示手势、分组计数及保留期内长范围，版本升至 3.4.0。
 
 ## 已融合与来源
 
@@ -22,6 +22,17 @@
 - 最近一小时摘要历史保持最多 150 个后端采样点 / 最多 20 个显示时段；查看的是时段平均值，缺测不连线。统计摘要和最新实时状态不会伪造成带时间戳的历史。
 - 最新探测负值显示不可达，丢包使用 NodeStatusPing 的百分数契约；Metric Store `ping.loss` 的比例只在历史显示处乘 100。
 - 保留 public home / detail、后台权限服务、compact 默认、主题 ZIP 布局及文件名，未新增依赖、SW、后端插件或新路由。
+
+## 第二阶段追加融合（v3.4.0）
+
+| 来源快照 | 移植 / 改写 | 主线取舍 |
+| --- | --- | --- |
+| [pwremilk f826ecd](https://github.com/pwremilk/komari-theme-Glassmorphism-custom/tree/f826ecd956848d12082cff593f7194f7ed26a6ac) | WebGL 能力探测 | 真实地球初始化失败、上下文丢失和 WebGL 不可用时均回退现有平铺地图；不强制用户切换设置。 |
+| [3560912451zz-stack 3aacbda](https://github.com/3560912451zz-stack/komari-theme-Glassmorphism/tree/3aacbda95671297e7b42c30b3a76d5e9d0bf5ea2) | 公网 IP 与异步地理结果过滤 | 完整校验 IPv4、IPv6、IPv4-mapped literal，拒绝保留 / 文档 / 链路本地地址与 0,0；查询代次变化或退出登录后丢弃结果。 |
+| [casiuna 3bb76d9](https://github.com/casiuna/Glassmorphism-Enhanced/tree/3bb76d9fd6f86d9fe56845b12922ee75866f2ed3) | IPv6 地理回退 | 节点 IPv4 服务返回无效坐标后顺序尝试 IPv6；保留缓存、权限和国家级坐标兜底。 |
+| [zfloong d6ccddbd](https://github.com/zfloong/komari-theme-Glassmorphism/tree/d6ccddbd4b619f83bdac2520bd22a3bf97f58100) | 7 / 15 / 30 天 Ping 快捷范围 | 只有后端保留期足够时显示，保留原 6 / 12 小时和自定义范围。 |
+
+第二阶段还把触屏轻点 / 滑动 / 长按判断改写为独立 composable，分组数量默认关闭并按可见节点、离线节点和多分组分别计数。没有合入大批量后端请求、三网中转估算、Worker / Service Worker、个人 API 或整套皮肤。
 
 ## 本轮保留为候选
 

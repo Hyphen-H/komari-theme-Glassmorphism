@@ -130,8 +130,8 @@ watch(searchText, (value) => {
 })
 
 const groups = computed(() => [
-  { tab: '全部节点', name: 'all' },
-  ...nodesStore.groups.map(g => ({ tab: g, name: g })),
+  { tab: '全部节点', name: 'all', count: nodesStore.totalCount },
+  ...nodesStore.groups.map(g => ({ tab: g, name: g, count: nodesStore.groupCounts.get(g) ?? 0 })),
 ])
 
 const quickControlKeys = computed<HomeQuickControlKey[]>(() => appStore.homeQuickControlOrder.filter(key => key !== 'monthlyCost'))
@@ -449,6 +449,7 @@ const nodeCardGridClass = computed(() => {
                     class="h-6.5 flex-none shrink-0 text-xs border-none data-[state=active]:text-selection shadow-none rounded-sm"
                   >
                     {{ g.tab }}
+                    <span v-if="appStore.groupNodeCountEnabled" class="ml-1 tabular-nums opacity-70">{{ g.count }}</span>
                   </TabsTrigger>
                 </TabsList>
 

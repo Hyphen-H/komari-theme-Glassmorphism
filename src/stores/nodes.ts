@@ -130,6 +130,16 @@ const useNodesStore = defineStore('nodes', () => {
     return Array.from(groupSet)
   })
 
+  // Adapted from thinkemm: count public-visible nodes, including offline nodes.
+  const groupCounts = computed(() => {
+    const counts = new Map<string, number>()
+    for (const node of visibleNodes.value) {
+      for (const group of new Set(node.groups))
+        counts.set(group, (counts.get(group) ?? 0) + 1)
+    }
+    return counts
+  })
+
   function areStringArraysEqual(left: string[], right: string[]): boolean {
     return left.length === right.length && left.every((value, index) => value === right[index])
   }
@@ -489,6 +499,7 @@ const useNodesStore = defineStore('nodes', () => {
     onlineCount,
     totalCount,
     groups,
+    groupCounts,
     nodesByUuid,
     visibleNodesByUuid,
     // 方法

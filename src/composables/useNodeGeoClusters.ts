@@ -1,9 +1,12 @@
 import type { NodeData } from '@/stores/nodes'
 import type { IpGeo } from '@/utils/ipGeoHelper'
-import { computed, ref, watch } from 'vue'
+import { computed, onScopeDispose, ref, watch } from 'vue'
+import { getNodeIps } from '@/services/provider.service'
+import { useAppStore } from '@/stores/app'
 import { useNodesStore } from '@/stores/nodes'
 import { formatCityNameZh } from '@/utils/cityNameHelper'
 import { getCoordByCode, getCountryCodeFromRegion } from '@/utils/geoHelper'
+import { isPublicIp } from '@/utils/ipAddress'
 import { lookupIpGeo } from '@/utils/ipGeoHelper'
 import { getRegionDisplayName } from '@/utils/regionHelper'
 
@@ -35,35 +38,52 @@ const IP_GEO_RETRY_INTERVAL_MS = 10 * 60 * 1000
 
 export function useNodeGeoClusters(options: UseNodeGeoClustersOptions = {}) {
   const nodesStore = useNodesStore()
+  const appStore = useAppStore()
+  let generation = 0
+  onScopeDispose(() => {
+    generation++
+  })
 
   const displayNodes = computed(() => options.nodes?.() ?? nodesStore.visibleNodes)
   const ipGeoMap = ref(new Map<string, IpGeo>())
   const failedIpAttempts = new Map<string, number>()
 
-  async function resolveNodeCities(nodes: NodeData[]): Promise<void> {
-    const ips: string[] = []
-    const seenIps = new Set<string>()
+  async function resolveNodeCities(nodes: NodeData[], current: number): Promise<void> {
+    if (!await appStore.requireLoginPermission('providerGeoLookup', { force: false }) || current !== generation)
+      return
+    const pending: string[][] = []
     const now = Date.now()
 
     for (const node of nodes) {
-      const ip = node.ipv4 || node.ipv6
-      if (!ip || seenIps.has(ip) || ipGeoMap.value.has(ip))
+      const candidates = getNodeIps(node).filter(isPublicIp)
+      if (candidates.some(ip => ipGeoMap.value.has(ip)))
         continue
-
-      const failedAt = failedIpAttempts.get(ip)
-      if (failedAt && now - failedAt < IP_GEO_RETRY_INTERVAL_MS)
-        continue
-
-      seenIps.add(ip)
-      ips.push(ip)
+      const available = candidates.filter((ip) => {
+        const failedAt = failedIpAttempts.get(ip)
+        return !failedAt || now - failedAt >= IP_GEO_RETRY_INTERVAL_MS
+      })
+      if (available.length)
+        pending.push(available)
     }
 
-    for (let i = 0; i < ips.length; i += IP_GEO_LOOKUP_BATCH_SIZE) {
-      const batch = ips.slice(i, i + IP_GEO_LOOKUP_BATCH_SIZE)
-      const results = await Promise.all(batch.map(async (ip) => {
-        const geo = await lookupIpGeo(ip)
-        return { ip, geo }
-      }))
+    for (let i = 0; i < pending.length; i += IP_GEO_LOOKUP_BATCH_SIZE) {
+      if (current !== generation)
+        return
+      const batch = pending.slice(i, i + IP_GEO_LOOKUP_BATCH_SIZE)
+      const results = (await Promise.all(batch.map(async (candidates) => {
+        const attempts: Array<{ ip: string, geo: IpGeo | null }> = []
+        for (const ip of candidates) {
+          if (current !== generation)
+            break
+          const geo = ipGeoMap.value.get(ip) ?? await lookupIpGeo(ip)
+          attempts.push({ ip, geo })
+          if (geo)
+            break
+        }
+        return attempts
+      }))).flat()
+      if (current !== generation || !appStore.privateFeaturesAllowed)
+        return
       const resolved = results.filter((result): result is { ip: string, geo: IpGeo } => result.geo !== null)
 
       for (const { ip, geo } of results) {
@@ -86,8 +106,7 @@ export function useNodeGeoClusters(options: UseNodeGeoClustersOptions = {}) {
 
   function nodeClusterInfo(node: NodeData): { id: string, code: string, coord: [number, number], label: string, asn?: string, org?: string } | null {
     const countryCode = getCountryCodeFromRegion(node.region)
-    const ip = node.ipv4 || node.ipv6
-    const geo = ip ? ipGeoMap.value.get(ip) : undefined
+    const geo = getNodeIps(node).map(ip => ipGeoMap.value.get(ip)).find(Boolean)
 
     if (geo && Number.isFinite(geo.lat) && Number.isFinite(geo.lng)) {
       const code = (geo.countryCode || countryCode || '').toUpperCase()
@@ -159,12 +178,18 @@ export function useNodeGeoClusters(options: UseNodeGeoClustersOptions = {}) {
   }
 
   const nodeIpSignature = computed(() => displayNodes.value
-    .map(node => node.ipv4 || node.ipv6 || '')
+    .map(node => `${node.uuid}:${getNodeIps(node).join(',')}`)
     .filter(Boolean)
     .join('|'))
 
-  watch(nodeIpSignature, () => {
-    void resolveNodeCities(displayNodes.value)
+  watch([nodeIpSignature, () => appStore.privateFeaturesAllowed], () => {
+    const current = ++generation
+    if (!appStore.privateFeaturesAllowed) {
+      ipGeoMap.value = new Map()
+      failedIpAttempts.clear()
+      return
+    }
+    void resolveNodeCities(displayNodes.value, current)
   }, { immediate: true })
 
   return {

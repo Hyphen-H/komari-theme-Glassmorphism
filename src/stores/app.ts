@@ -1112,6 +1112,7 @@ const useAppStore = defineStore('app', () => {
 
   const gpuChartEnabled = computed<boolean>(() => readBooleanSetting(themeSettings.value, 'gpuChartEnabled', false))
   const threeNetPingEnabled = computed(() => readBooleanSetting(themeSettings.value, 'threeNetPingEnabled', false))
+  const groupNodeCountEnabled = computed(() => readBooleanSetting(themeSettings.value, 'groupNodeCountEnabled', false))
   const threeNetPingTaskIds = computed(() => parsePingTaskIds(themeSettings.value.threeNetPingTaskIds))
   const threeNetPingNodeTaskBindings = computed(() => parseNodePingBindings(themeSettings.value.threeNetPingNodeTaskBindings))
 
@@ -1340,6 +1341,7 @@ const useAppStore = defineStore('app', () => {
     nodeDetailSectionTabsEnabled,
     gpuChartEnabled,
     threeNetPingEnabled,
+    groupNodeCountEnabled,
     threeNetPingTaskIds,
     threeNetPingNodeTaskBindings,
     detailMetricCardOrder,
