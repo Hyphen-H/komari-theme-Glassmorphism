@@ -1,0 +1,42 @@
+# 2026-10-12 fork 优化融合记录
+
+用户选择 A4（towersip 三网小曲线），要求默认关闭、其他优化由维护者挑选、分阶段 Git 存档并逐项致谢。本次范围为 M5 可选曲线、M2 缓存和刷新、M4 手机 / 图表布局、M3 浮窗文本转义、M6 文档与回归验证。版本仍为 3.3.8，本地开发不触发发布。
+
+## 已融合与来源
+
+| 来源快照                                                                                                                 | 移植 / 改写                                                                                                   | 主线落点和取舍                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [towersip a41270e](https://github.com/towersip/komari-theme-Glassmorphism/tree/a41270e460ee003e33f25091e8f3b3a950675662) | `Sparkline.vue`、`sparklinePath.ts`、`useSparklinePeriodInspect.ts`；参考 `useThreeNetPing.ts` 和任务绑定设置 | 新增 NodeThreeNetPing / useThreeNetPing，复用 useNodePingStats 每节点一次历史查询；SVG 保留空值、真实极值和直线段，避免曲线插值越界与削掉尖峰；手机改为抬手轻点才固定选点，8px 以上移动 / 长按 / pointercancel 不触发。支持键盘选点和安全的配置回退。 |
+| [towersip 48d9587](https://github.com/towersip/komari-theme-Glassmorphism/commit/48d9587)                                | iOS 安全区布局思路                                                                                            | 主线 Header / Footer / BackTop / AppDialog 使用 env(safe-area-inset-\*)，弹窗同时修正不对称安全区中心；保留已有 viewport-fit=cover 和 reka-ui 模态焦点 / 滚动锁。                                                                                     |
+| [thinkemm f45aa31](https://github.com/thinkemm/komari-theme-Glassmorphism/tree/f45aa317086aa10587b3f182170ec6eee1e15011) | 公共任务 TTL 缓存、`${key}:tasks` 取消、节点 Ping 状态传递                                                    | metrics.service 公共元数据缓存 5 分钟，仍走 RequestManager 去重；history.service 释放关联请求；nodes store 保留 typed ping 并在现有响应式对象上更新。                                                                                                 |
+| [VoyagerProbe fa18256](https://github.com/VoyagerProbe/Glassmorphism-Plus/tree/fa182566bb1978f88d362fe0f7345d1a4b6f52bc) | `pingChartPresentation.ts` 的 escapePingTooltip / pingChartTaskLabels、`pingChartSmoothing.ts`                | PingChart 图例及颜色依任务 ID，重复名称加唯一后缀，HTML formatter 转义任务名；展示 EWMA 不改原始数据和统计，空值重置平滑，不再填补缺测；轴标签 hideOverlap。仅移植实际使用的 helpers。                                                                |
+| 同上                                                                                                                     | 共享刷新调度及隐藏 / 离线暂停思路；窄屏头部布局                                                               | 新 visibleRefresh.service 单计时器、按订阅释放、隐藏 / 离线暂停、恢复立即刷新。HomeView KeepAlive 失活时释放曲线历史及任务订阅。Header 长标题省略，操作按钮不挤压；详情小屏头部三列、操作条另起一行，保留主线 Select / GPU 功能。                     |
+
+三个来源 LICENSE 均为 MIT，并保留相同的 `Copyright (c) 2025 Tony Liu (tonyliuzj, tony-liu.com)`。本仓库 LICENSE 已含完整版权、许可及免责条款；README 致谢额外记录贡献者链接和移植范围。`public/THIRD-PARTY-NOTICES.txt` 将完整许可及来源信息随构建复制到 dist 和主题 ZIP。
+
+## 设置与兼容性
+
+- `threeNetPingEnabled=false`：原双面板，不请求额外任务目录，不计算逐任务曲线。
+- `threeNetPingTaskIds=""`：自动选取适用于当前节点的电信、联通、移动；不足时补其他任务。显式 ID 顺序不随后台任务排序变化。
+- `threeNetPingNodeTaskBindings="{}"`：可选 UUID → 最多三个任务 ID，优先于全局；无效 JSON / UUID / ID 安全回退。没有适用任务显示提示，不编造线路。
+- 最近一小时摘要历史保持最多 150 个后端采样点 / 最多 20 个显示时段；查看的是时段平均值，缺测不连线。统计摘要和最新实时状态不会伪造成带时间戳的历史。
+- 最新探测负值显示不可达，丢包使用 NodeStatusPing 的百分数契约；Metric Store `ping.loss` 的比例只在历史显示处乘 100。
+- 保留 public home / detail、后台权限服务、compact 默认、主题 ZIP 布局及文件名，未新增依赖、SW、后端插件或新路由。
+
+## 本轮保留为候选
+
+其余候选仍在 [审查报告](fork-optimization-review-2026-10-12.md)。批量多节点请求涉及后端兼容与大规模压测；WebGL 降级需验证 WebGL2 / 上下文丢失；地理回退需要完整 IPv6 边界；周期流量 sum 需要后端指标定义。未为增加融合数量而导入整个 fork、不同皮肤、个人 API 或自定义后端插件。
+
+## 阶段存档与验证
+
+- `b90769f`：Issue #59 模态浮窗层级、指标图例 / 图标对齐，以及来源审查报告。
+- `ecd3fc4`：公共任务缓存、关联取消、共享可见刷新及逐任务 / 实时状态基础。
+- `da42c8e`：默认关闭的 A4、绑定 / 自动选择、历史点交互、图表文本转义与缺测正确性。
+- `1b0cbf7`：手机安全区 / 窄屏布局与包内许可。
+- 最后另存 README / 本融合记录 / 本任务 AICACHE 交接。包对应最后源码提交 1b0cbf7，后续只有文档提交；本地制作，不推送或发布。
+
+最终 `bun run lint`、`bun run build`、`git diff --check` 均通过。聚焦 Playwright **13/13**（23 秒）覆盖默认双面板无额外目录请求、桌面 / 手机三网历史和实时更新、精确 ID 绑定、缺测断线、实际手机滑动 / 键盘选点、目录缓存复用、后台暂停恢复、图例真实位置与切换、模态浮窗遮挡，以及同名 / HTML 任务名边界。手机交互在 Chromium 验证，真机 Safari 尚未验证。
+
+主题包：`komari-theme-Glassmorphism-build-1b0cbf7.zip`，版本 **3.3.8**，**7,600,938 bytes / 773 entries**，SHA-256 `61a2ceabc2e403c477e65d527c4be28821acef4a07770f171133436c5f49bfb0`。ZIP 顶层保持 `komari-theme.json` / `preview.png` / `dist/`；preview 与 docs/preview.png 一致、所有 dist 文件逐字节一致、包内有 MIT 许可、A4 默认 false / 卡片默认 compact。
+
+截图：`test-results/three-net-desktop.png` / `three-net-mobile.png`、`chart-legends-*.png`、`ping-tooltip-*.png`（本地验证产物，不提交到源码）。构建只报告既有 VueUse PURE 注释与 globe 大块体积提示。

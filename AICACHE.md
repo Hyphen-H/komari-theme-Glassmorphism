@@ -12,6 +12,49 @@
 
 ## 当前任务
 
+- 状态：done，A4 可选三网曲线、性能 / 手机优化、致谢及主题包完成（2026-10-12）
+- 用户要求：三网小曲线做成可开启设置，默认保持原展示；性能与外观按收益融合；制作过程分阶段 Git 存档；致谢写作者链接及吸收代码。
+- 里程碑：M5 可选三网曲线、M2 请求缓存 / 后台刷新、M4 手机布局、安全区及兼容性、M3 图表文本转义、M6 验证与来源致谢。
+- 计划：保存已验证 UI 修复 -> 服务缓存与生命周期 -> 默认关闭的三网任务曲线与精确绑定 -> 手机适配 / 图表显示正确性 -> 致谢、验证、最终提交与主题包。
+- Git：工作分支 `codex/optional-three-net-sparklines`，仅提交本任务文件；保留现有 5 张预览图删除、AICACHE 历史修改、output/tmp，不推送或发布。
+- 实现：A4 默认关闭；全局 / UUID 任务 ID 绑定、自动运营商选择、最近一小时 20 个时段曲线、手机轻点 / 滑动区分、键盘选点；逐任务曲线复用既有历史请求，缺测断线、实时状态持续更新。公共目录缓存 5 分钟、共享可见刷新、离线 / 后台暂停与恢复；保持 HomeView KeepAlive 失活时释放订阅。
+- 其他优化：Header / Footer / BackTop / AppDialog 安全区，手机长标题与详情操作条布局；Ping 展示 EWMA 不补空值，重复任务名按 ID 区分，Ping / GPU / 通用指标浮窗的外部名称 HTML 转义。图例与浮窗修复仍有效。
+- 存档：`b90769f` UI 修复与审查；`ecd3fc4` 缓存 / 调度；`da42c8e` A4 与图表正确性；`1b0cbf7` 手机布局 / 包内许可；最后另存 README / 融合记录 / 本任务交接。包对应最后源码提交 1b0cbf7，后续只有文档提交。
+- 来源致谢：README 表格列 towersip / thinkemm / VoyagerProbe 的作者和项目链接、吸收内容；`docs/fork-integration-2026-10-12.md` 固定来源完整 SHA、主线取舍。`public/THIRD-PARTY-NOTICES.txt` 将原 MIT 版权与许可完整带入 dist / ZIP。
+- 验证：最终 `bun run lint` / `bun run build` / `git diff --check` 通过；聚焦 Playwright 13/13（23 秒），涵盖默认无额外目录请求、ID 绑定、实时刷新、缺测断线、实际手机滚动不误触、键盘操作、缓存复用、后台暂停恢复、页面切换、重复名称 / HTML 转义、图例实际布局、Issue #59 遮挡回归。手机交互与窄屏布局验证为 Chromium，未声称已在真机 Safari 验证。
+- 最终包：`komari-theme-Glassmorphism-build-1b0cbf7.zip`，3.3.8，7,600,938 bytes / 773 entries，SHA-256 `61a2ceabc2e403c477e65d527c4be28821acef4a07770f171133436c5f49bfb0`。核对顶层仅 manifest / preview / dist，preview 与 docs/preview.png 一致、全部 dist 内容一致、许可存在、A4 默认 false / 卡片默认 compact；版本未改。
+- 可核对截图：`test-results/three-net-desktop.png` / `three-net-mobile.png`，以及 chart-legends-* / ping-tooltip-*。其他候选保留审查报告，未盲目合并 fork 全树、后端插件、个人 API 或 SW。
+
+- 状态：done，详情页负载图表图例与对齐修复（2026-10-12）
+- 目标：按截图补 CPU / 负载图例，统一所有负载图的图例标记、字体、底部基线与标题图标尺寸，并覆盖移动端。
+- 里程碑：M4 UI/UX + M6 聚焦浏览器验证；不改变数据采样、请求或业务指标。
+- 初步根因：CPU / 进程无图例、绘图区 bottom 为 32，其他图为 52；内存 / 磁盘图例为 10×8 / 10px，网络等为 12×12 / 11px；标题副标题可能改变卡片内高度。
+- 实现：共享 `METRIC_CHART_GRID` / `METRIC_CHART_LEGEND`，固定 10×10 圆角图例、11px 字号与 52px 底部绘图区留白；CPU / 负载和进程补图例；所有指标标题高度 40px，图标框 32px / SVG 18px。统一为单行可滚动图例并注册 LegendScrollComponent，长 GPU / Ping 名称不因换行破坏对齐。
+- 视觉核对追加修复：MetricSeriesChartCard 的 Canvas 颜色原来使用无法解析的 CSS var，暗色时坐标发黑且图例文字随曲线色；抽出纯主题色 helper，与负载图共享实际 rgba 颜色。
+- 验证：`bun run lint`、`bun run build`、`git diff --check` 通过；图表布局用例 3/3 通过，覆盖默认桌面 6 图、完整桌面及手机 12 图，检查实际绘制图例边界 / 同排基线 / 图标尺寸 / 图例文字色 / 点击切换 CPU / 页面无横向溢出；Issue #59 回归仍 3/3 通过。
+- 产物：默认六图截图 `test-results/chart-legends-default-desktop.png`，完整截图 `test-results/chart-legends-light-desktop.png` / `chart-legends-dark-mobile.png`；本地包仍为 `komari-theme-Glassmorphism-build-e0aedb0.zip`，版本未改。
+
+- 状态：done，候选审查完成，等待用户选择融合范围（2026-10-12）
+- 目标：按用户最新要求，先整理首页三网卡片、手机浏览器布局及性能等有价值的优化，提供来源、建议和风险，等待选择后再融合。
+- 里程碑：按候选分别归类 M2 性能、M3 安全、M4 UI/UX、M5 功能及 M6 验证；每项保留来源 SHA 和取舍。
+- 计划：建立仓库清单 -> 比较独有提交 / 源码和当前实现 -> 审查许可证与兼容性 -> 输出编号候选、建议及来源 -> 等待用户选择 -> 另行移植和验证。
+- 进度：已检索 53 个关联 fork 及 6 个名称匹配的独立仓库（其中 1 个为原仓库，共 58 个衍生候选）；抓取默认分支至 fork-audit 临时引用。按最新要求已撤回本次试接的 fork 源码，保留 Issue #59 修复和原有本地改动。
+- 完成：额外追溯已更名的 Transit，共 59 个审查快照；58 个同名 / fork 候选中 29 个无本地主线以外提交。MIT 许可证均已读取；所有来源 HEAD SHA 固定并记录。
+- 交付：`docs/fork-optimization-review-2026-10-12.md`，A1–A7 首页卡片、M1–M7 手机、P1–P4 性能、Q1–Q5 正确性 / 安全、F1–F6 功能；逐项有地址、增量、建议及风险，附 59 个仓库来源表。原仓库三种卡片图保存于 `docs/fork-review-20261012/`。
+- 推荐：A2 + F1；基础优化先选 M1 / M2 / M3 / M5 / M6 / P1 / Q1 / Q2，以及 F3 的窄屏轴标签避让。P2 / P3 按节点规模分阶段，估算 / 后端插件 / Worker 等另行选择。
+- 下一步：按用户选择移植；fork 功能均未合入。源码仅保留两项明确要求的本地 UI 修复，没有推送、版本递增或发布。
+- 约束：保留已完成的 Issue #59 修复和现有本地改动，遵循现有服务 / 请求 / 缓存 / 权限分层和主题包契约。
+
+- 状态：done，Issue #59 本地修复及浏览器验证完成
+- 目标：修复首页 Ping 弹窗中任务信息提示被遮罩和弹窗盖住的问题。
+- 里程碑：M4 UI/UX；修复共享 Tooltip 层级，保留 reka-ui 的定位、Portal 与碰撞避让。
+- 已确认：Issue 截图对应任务信息图标；Tooltip Portal 挂到 body 后层级为 50，低于 AppDialog 遮罩 100 / 内容 101。图表提示不是本次截图中的问题。
+- 实现：`TooltipContent.vue` 默认层级由 `z-50` 改为 `z-110`，使 body Portal 中的提示高于 AppDialog；继续保留现有自动定位、碰撞避让和动画。
+- 回归：`tests/visual/visual.spec.ts` 新增 3 组场景（亮色桌面、暗色桌面、暗色移动触控），覆盖任务统计、平滑峰值说明、弹窗关闭清理和公开详情页；通过视口边界和提示四个采样点的 `elementFromPoint` 检查实际遮挡，而非只检查 DOM 可见性。
+- 验证：旧代码的亮色桌面回归在遮挡断言处实际失败；修复后 `bun x playwright test --grep 'ping dialog tooltips' --timeout 30000` 为 3/3 通过（9.5 秒）。`bun run lint`、`bun run build` 和 `git diff --check` 通过；构建只有既有 VueUse PURE 注释和 globe chunk 体积警告。
+- 交付：本地包 `komari-theme-Glassmorphism-build-e0aedb0.zip`；修复前后截图保存在 `test-results/ping-tooltip-*.png`。未提交、推送、改版本或发布，Issue #59 仍打开。
+- 工作区：原有 AICACHE 内容、5 张历史预览图删除及 output/tmp 目录均保留，不纳入本次源码修复。
+
 - 状态：in-progress，本地修复与验证完成，正在发布 v3.3.5
 - 目标：修复详情页延迟任务卡片、图例和主页 Ping 指标线与 Komari 后台任务排序不一致的问题。
 - 里程碑：M4 UI/UX 兼容性修复，不修改后端任务权重或接口契约。
