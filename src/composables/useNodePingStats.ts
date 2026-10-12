@@ -255,23 +255,6 @@ function normalizeTaskId(taskId: string): number {
   return Math.abs(hash)
 }
 
-function buildMetricRecordsByClient(nodeUuid: string, stats: PingMetricTaskStats[], records: PingRecord[]): Map<string, PingRecord[]> {
-  const grouped = buildRecordsByClient(records)
-  if (grouped.size)
-    return grouped
-
-  const syntheticRecords = stats
-    .filter(stat => stat.entity_id === nodeUuid && typeof stat.latest === 'number' && Number.isFinite(stat.latest))
-    .map((stat): PingRecord => ({
-      client: nodeUuid,
-      task_id: normalizeTaskId(stat.task_id),
-      time: new Date().toISOString(),
-      value: stat.latest!,
-    }))
-
-  return buildRecordsByClient(syntheticRecords)
-}
-
 async function loadPingMetricRecords(nodeUuid: string, hours: number, maxCount?: number): Promise<SharedPingRecordsState | null> {
   const [statsResult, metricsResult] = await Promise.allSettled([
     loadPingMetricStats({ entity_id: nodeUuid, hours, max_points: maxCount }),
@@ -333,7 +316,7 @@ async function loadPingMetricRecords(nodeUuid: string, hours: number, maxCount?:
     }
   }
 
-  const recordsByClient = buildMetricRecordsByClient(nodeUuid, stats, metricRecords)
+  const recordsByClient = buildRecordsByClient(metricRecords)
   const exactLossTaskIds = new Set(
     stats
       .filter(stat => stat.total > 0 && !stat.loss_approximate && isFiniteNumber(stat.loss))

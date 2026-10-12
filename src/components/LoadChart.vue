@@ -26,6 +26,7 @@ import { getChartSeriesPalette, getLoadChartPalette, getMetricChartTheme } from 
 import { gpuUsageFromStatus } from '@/utils/gpuHelper'
 import { formatBytes, formatBytesSplit } from '@/utils/helper'
 import { comparePingTaskOrder, createPingTaskOrderMap, metricTags, normalizeMetricSeriesList } from '@/utils/metricSeries'
+import { escapePingTooltip, pingChartTaskLabels } from '@/utils/pingChartPresentation'
 import { fillMissingTimePoints } from '@/utils/recordHelper'
 import { getSharedRpc } from '@/utils/rpc'
 import '@/utils/echarts' // 共享 ECharts 配置
@@ -756,6 +757,7 @@ watchEffect(() => {
 })
 
 const pingTaskMap = computed(() => new Map(pingTasks.value.map(task => [String(task.id), task])))
+const pingTaskLabels = computed(() => pingChartTaskLabels(pingTasks.value))
 const pingTaskOrder = computed(() => createPingTaskOrderMap(pingTasks.value))
 
 function seriesHasData(series: MetricChartSeriesData): boolean {
@@ -835,7 +837,7 @@ function pingSeries(metricKey: 'ping.latency_ms' | 'ping.loss'): MetricChartSeri
     .map<MetricChartSeriesData>((series, index) => {
       const tags = metricTags(series)
       const taskId = String(tags.task_id ?? tags.task ?? '')
-      const taskName = pingTaskMap.value.get(taskId)?.name || (taskId ? `任务 ${taskId}` : `Ping ${index + 1}`)
+      const taskName = pingTaskLabels.value.get(Number(taskId)) || pingTaskMap.value.get(taskId)?.name || (taskId ? `任务 ${taskId}` : `Ping ${index + 1}`)
       return {
         name: taskName,
         color: metricSeriesColors[index % metricSeriesColors.length]!,
@@ -1143,7 +1145,7 @@ const diskChartOption = computed(() => ({
       for (const item of p) {
         const colorDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${item.color};margin-right:8px;flex-shrink:0"></span>`
         const text = item.seriesName === '磁盘总量' ? formatBytes(diskTotal) : `${formatBytes(diskUsed)} (${diskPercent}%)`
-        html += `<div style="display:flex;align-items:center">${colorDot}<span>${item.seriesName}</span><span style="margin-left:auto;font-weight:600;margin-left:16px">${text}</span></div>`
+        html += `<div style="display:flex;align-items:center">${colorDot}<span>${escapePingTooltip(item.seriesName)}</span><span style="margin-left:auto;font-weight:600;margin-left:16px">${text}</span></div>`
       }
       html += '</div>'
       return html
@@ -1297,7 +1299,7 @@ const gpuChartOption = computed(() => ({
 
       for (const item of p) {
         const colorDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${item.color};margin-right:8px;flex-shrink:0"></span>`
-        html += `<div style="display:flex;align-items:center">${colorDot}<span>${item.seriesName}</span><span style="margin-left:auto;font-weight:600;margin-left:16px">${item.value?.toFixed(1) ?? '-'}%</span></div>`
+        html += `<div style="display:flex;align-items:center">${colorDot}<span>${escapePingTooltip(item.seriesName)}</span><span style="margin-left:auto;font-weight:600;margin-left:16px">${item.value?.toFixed(1) ?? '-'}%</span></div>`
       }
 
       if (record.gpu_detailed) {
@@ -1307,7 +1309,7 @@ const gpuChartOption = computed(() => ({
           const usage = detail.usage == null ? '-' : `${detail.usage.toFixed(1)}%`
           const memory = detail.memory == null ? '-' : `${detail.memory.toFixed(1)}%`
           const temp = detail.temperature == null ? '' : ` · ${Math.round(detail.temperature)}℃`
-          html += `<div style="display:flex;align-items:center;gap:8px;color:${chartThemeColors.value.textSecondary}"><span>${name}</span><span style="margin-left:auto">${usage} / ${memory}${temp}</span></div>`
+          html += `<div style="display:flex;align-items:center;gap:8px;color:${chartThemeColors.value.textSecondary}"><span>${escapePingTooltip(name)}</span><span style="margin-left:auto">${usage} / ${memory}${temp}</span></div>`
         }
         html += '</div>'
       }
@@ -1406,7 +1408,7 @@ const connectionsChartOption = computed(() => ({
       for (const item of p) {
         const colorDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${item.color};margin-right:8px;flex-shrink:0"></span>`
         const displayValue = item.value != null ? Math.round(item.value) : '-'
-        html += `<div style="display:flex;align-items:center">${colorDot}<span>${item.seriesName}</span><span style="margin-left:auto;font-weight:600;margin-left:16px">${displayValue}</span></div>`
+        html += `<div style="display:flex;align-items:center">${colorDot}<span>${escapePingTooltip(item.seriesName)}</span><span style="margin-left:auto;font-weight:600;margin-left:16px">${displayValue}</span></div>`
       }
       html += '</div>'
       return html

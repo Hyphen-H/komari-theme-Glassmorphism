@@ -28,6 +28,12 @@ export interface VisualFixtureOptions {
   pingTaskOrdering?: boolean
   generalCardKeys?: string[]
   fullChartDashboard?: boolean
+  threeNetPing?: boolean
+  threeNetTaskIds?: string
+  threeNetNodeBindings?: string
+  livePingOffset?: number
+  pingGaps?: boolean
+  duplicateTaskNames?: boolean
 }
 
 function uuidFor(index: number): string {
@@ -225,7 +231,9 @@ function buildMetricResponse(
         tags: task ? { task_id: String(task.id), task_name: task.name } : {},
         points: points.map(point => ({
           time: point.time,
-          value: metricValue(key, point.index) + (task?.id ?? 0),
+          value: options.pingGaps && key === 'ping.latency_ms' && point.index >= 18 && point.index <= 30
+            ? null
+            : key === 'ping.loss' && options.threeNetPing ? 0.015 : metricValue(key, point.index) + (task?.id ?? 0),
         })),
       }))
     })
@@ -249,6 +257,10 @@ async function handleRpc(route: Route, clientFixtures = clients, options: Visual
   const metricPingTasks = options.pingTaskOrdering
     ? [pingTasks[2]!, pingTasks[0]!, pingTasks[1]!]
     : pingTasks
+  if (options.duplicateTaskNames) {
+    pingTasks[0]!.name = '<img src=x onerror="window.__pingInjected=1">同名'
+    pingTasks[1]!.name = pingTasks[0]!.name
+  }
   const pingRecords = pingTasks.flatMap(task => Array.from({ length: 48 }, (_, index) => ({
     task_id: task.id,
     client: uuid,
@@ -265,7 +277,20 @@ async function handleRpc(route: Route, clientFixtures = clients, options: Visual
       result = clientFixtures
       break
     case 'common:getNodesLatestStatus':
-      result = statuses
+      result = options.threeNetPing
+        ? Object.fromEntries(Object.entries(statuses).map(([id, status]) => [id, {
+            ...status,
+            ping: Object.fromEntries(pingTasks.map(task => [task.id, {
+              name: task.name,
+              latest: status.online ? 40 + task.id + (options.livePingOffset ?? 0) : -1,
+              avg: 80 + task.id,
+              min: 10,
+              max: 200,
+              tail: 100,
+              loss: status.online ? 1.5 : 100,
+            }])),
+          }]))
+        : statuses
       break
     case 'common:getNodeRecentStatus':
       result = { count: 48, records: buildRecords(uuid) }
@@ -345,7 +370,7 @@ export async function installKomariFixture(page: Page, options: VisualFixtureOpt
     : clients
   const settings = {
     themeMode: options.dark ? 'dark' : 'light',
-    dataUpdateInterval: 60,
+    dataUpdateInterval: options.threeNetPing ? 3 : 60,
     rpcTransportMode: 'http',
     defaultViewMode: options.viewMode ?? 'card',
     nodeCardSize: options.nodeCardSize ?? 'compact',
@@ -361,6 +386,13 @@ export async function installKomariFixture(page: Page, options: VisualFixtureOpt
     homeQuickControlPreset: '完整',
     homeToolsEnabled: true,
     ...(options.fullChartDashboard ? { chartDashboardPreset: '完整', gpuChartEnabled: true } : {}),
+    ...(options.threeNetPing
+      ? {
+          threeNetPingEnabled: true,
+          threeNetPingTaskIds: options.threeNetTaskIds ?? '',
+          threeNetPingNodeTaskBindings: options.threeNetNodeBindings ?? '{}',
+        }
+      : {}),
     generalCardPreset: '自定义',
     generalCardKeys: (options.generalCardKeys ?? (
       options.earthRenderer === 'tiled'

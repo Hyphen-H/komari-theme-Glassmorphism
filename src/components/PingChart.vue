@@ -16,7 +16,8 @@ import { loadPingMetricStats, loadPublicPingTasks, queryMetrics } from '@/servic
 import { useAppStore } from '@/stores/app'
 import { ACCESSIBLE_LINE_TYPES, getChartSeriesPalette } from '@/utils/chartPalette'
 import { isPingMetric, normalizeMetricSeriesList, orderPingTasksByBackend, PING_LATENCY_METRIC, pingTaskId, pingTaskName } from '@/utils/metricSeries'
-import { cutPeakValues, interpolateNullsLinear } from '@/utils/recordHelper'
+import { escapePingTooltip, pingChartTaskLabels } from '@/utils/pingChartPresentation'
+import { smoothPingChartDisplayRows } from '@/utils/pingChartSmoothing'
 import '@/utils/echarts' // 共享 ECharts 配置
 
 const props = defineProps<{
@@ -477,15 +478,7 @@ const chartData = computed(() => {
     return []
 
   if (cutPeak.value) {
-    data = cutPeakValues(data, selectedKeys)
-  }
-
-  if (selectedKeys.length > 0 && data.length > 0) {
-    data = interpolateNullsLinear(data, selectedKeys, {
-      maxGapMultiplier: 6,
-      minCapMs: 2 * 60_000,
-      maxCapMs: 30 * 60_000,
-    })
+    data = smoothPingChartDisplayRows(data, selectedTaskIds.value)
   }
 
   return data
@@ -550,6 +543,8 @@ const selectedTasks = computed(() => {
   return tasks.value.filter(t => selectedTaskIds.value.includes(t.id))
 })
 
+const taskLabels = computed(() => pingChartTaskLabels(tasks.value))
+
 // 切换任务选中状态
 function toggleTask(taskId: number) {
   if (selectedTaskIds.value.includes(taskId)) {
@@ -612,7 +607,7 @@ const pingChartOption = computed(() => {
       ? (ACCESSIBLE_LINE_TYPES[index % ACCESSIBLE_LINE_TYPES.length] ?? 'solid')
       : 'solid'
     return {
-      name: task.name,
+      name: taskLabels.value.get(task.id),
       type: 'line' as const,
       data: data.map(d => d[task.id] as number | null ?? null),
       smooth: cutPeak.value ? 0.6 : 0.1,
@@ -661,10 +656,10 @@ const pingChartOption = computed(() => {
         for (const item of sortedParams) {
           if (item.value !== null && item.value !== undefined) {
             // 通过任务名找到对应的任务ID，再获取颜色
-            const task = tasks.value.find(t => t.name === item.seriesName)
+            const task = tasks.value.find(t => taskLabels.value.get(t.id) === item.seriesName)
             const color = task ? colorMap.get(task.id) || chartColors[0] : chartColors[0]
             const colorDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:8px;flex-shrink:0"></span>`
-            html += `<div style="display:flex;align-items:center">${colorDot}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.seriesName}</span><span style="margin-left:auto;font-weight:600;margin-left:16px;font-variant-numeric:tabular-nums">${Math.round(item.value)} ms</span></div>`
+            html += `<div style="display:flex;align-items:center">${colorDot}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapePingTooltip(item.seriesName)}</span><span style="margin-left:auto;font-weight:600;margin-left:16px;font-variant-numeric:tabular-nums">${Math.round(item.value)} ms</span></div>`
           }
         }
         html += '</div>'
@@ -679,13 +674,14 @@ const pingChartOption = computed(() => {
       itemGap: 16,
       icon: 'roundRect',
       textStyle: { fontSize: 11, color: chartThemeColors.value.textSecondary },
-      data: taskList.map(t => t.name),
+      data: taskList.map(t => taskLabels.value.get(t.id)),
     },
     grid: chartMargin,
     xAxis: {
       type: 'category',
       data: data.map(d => formatTime(d.time as string, showDateInAxis.value)),
       axisLabel: {
+        hideOverlap: true,
         fontSize: 11,
         color: chartThemeColors.value.textSecondary,
         margin: 12,
@@ -947,7 +943,7 @@ onBeforeUnmount(() => {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <span>使用 EWMA 算法平滑数据并过滤突变值</span>
+                  <span>使用 EWMA 算法平滑显示，保留缺失时段；统计和历史原值不变</span>
                 </TooltipContent>
               </Tooltip>
             </div>

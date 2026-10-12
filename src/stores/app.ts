@@ -5,6 +5,7 @@ import { useStorageAsync } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { getAuthSession, requirePermission, setAuthSessionFromLogin, verifyLogin } from '@/services/auth.service'
+import { parseNodePingBindings, parsePingTaskIds } from '@/utils/threeNetSettings'
 
 export type ThemeMode = 'auto' | 'light' | 'dark'
 export type ManagedThemeMode = 'beijing' | 'light' | 'dark'
@@ -1110,6 +1111,9 @@ const useAppStore = defineStore('app', () => {
   const nodeDetailSectionTabsEnabled = computed<boolean>(() => readBooleanSetting(themeSettings.value, 'nodeDetailSectionTabsEnabled', false))
 
   const gpuChartEnabled = computed<boolean>(() => readBooleanSetting(themeSettings.value, 'gpuChartEnabled', false))
+  const threeNetPingEnabled = computed(() => readBooleanSetting(themeSettings.value, 'threeNetPingEnabled', false))
+  const threeNetPingTaskIds = computed(() => parsePingTaskIds(themeSettings.value.threeNetPingTaskIds))
+  const threeNetPingNodeTaskBindings = computed(() => parseNodePingBindings(themeSettings.value.threeNetPingNodeTaskBindings))
 
   const detailMetricCardOrder = computed<DetailMetricCardKey[]>(() => {
     const settings = themeSettings.value
@@ -1335,6 +1339,9 @@ const useAppStore = defineStore('app', () => {
     nodeListCustomTagsVisible,
     nodeDetailSectionTabsEnabled,
     gpuChartEnabled,
+    threeNetPingEnabled,
+    threeNetPingTaskIds,
+    threeNetPingNodeTaskBindings,
     detailMetricCardOrder,
     offlineNodesLast,
     homeHighLoadThreshold,

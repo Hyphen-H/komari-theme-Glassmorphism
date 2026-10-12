@@ -6,6 +6,7 @@ import { METRIC_CHART_GRID, METRIC_CHART_LEGEND } from '@/constants/chart'
 import { useAppStore } from '@/stores/app'
 import { getMetricChartTheme } from '@/utils/chartPalette'
 import { formatBytes } from '@/utils/helper'
+import { escapePingTooltip } from '@/utils/pingChartPresentation'
 import MetricChartHeader from './MetricChartHeader.vue'
 import '@/utils/echarts'
 
@@ -90,9 +91,9 @@ const chartOption = computed(() => ({
       const rows = items.map((item) => {
         const source = props.series[item.seriesIndex]
         const kind = source?.kind ?? primaryKind.value
-        return `<div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:2px;background:${item.color};flex:none"></span><span>${item.seriesName}</span><strong style="margin-left:auto;padding-left:12px">${formatMetricValue(item.data?.[1], kind)}</strong></div>`
+        return `<div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:2px;background:${item.color};flex:none"></span><span>${escapePingTooltip(item.seriesName)}</span><strong style="margin-left:auto;padding-left:12px">${formatMetricValue(item.data?.[1], kind)}</strong></div>`
       }).join('')
-      return `<div style="margin-bottom:6px;color:var(--color-muted-foreground)">${items[0]?.axisValueLabel ?? ''}</div><div style="display:flex;flex-direction:column;gap:4px">${rows}</div>`
+      return `<div style="margin-bottom:6px;color:var(--color-muted-foreground)">${escapePingTooltip(items[0]?.axisValueLabel ?? '')}</div><div style="display:flex;flex-direction:column;gap:4px">${rows}</div>`
     },
   },
   legend: {
