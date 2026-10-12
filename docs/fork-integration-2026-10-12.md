@@ -25,12 +25,12 @@
 
 ## 第二阶段追加融合（v3.4.0）
 
-| 来源快照 | 移植 / 改写 | 主线取舍 |
-| --- | --- | --- |
-| [pwremilk f826ecd](https://github.com/pwremilk/komari-theme-Glassmorphism-custom/tree/f826ecd956848d12082cff593f7194f7ed26a6ac) | WebGL 能力探测 | 真实地球初始化失败、上下文丢失和 WebGL 不可用时均回退现有平铺地图；不强制用户切换设置。 |
-| [3560912451zz-stack 3aacbda](https://github.com/3560912451zz-stack/komari-theme-Glassmorphism/tree/3aacbda95671297e7b42c30b3a76d5e9d0bf5ea2) | 公网 IP 与异步地理结果过滤 | 完整校验 IPv4、IPv6、IPv4-mapped literal，拒绝保留 / 文档 / 链路本地地址与 0,0；查询代次变化或退出登录后丢弃结果。 |
-| [casiuna 3bb76d9](https://github.com/casiuna/Glassmorphism-Enhanced/tree/3bb76d9fd6f86d9fe56845b12922ee75866f2ed3) | IPv6 地理回退 | 节点 IPv4 服务返回无效坐标后顺序尝试 IPv6；保留缓存、权限和国家级坐标兜底。 |
-| [zfloong d6ccddbd](https://github.com/zfloong/komari-theme-Glassmorphism/tree/d6ccddbd4b619f83bdac2520bd22a3bf97f58100) | 7 / 15 / 30 天 Ping 快捷范围 | 只有后端保留期足够时显示，保留原 6 / 12 小时和自定义范围。 |
+| 来源快照                                                                                                                                     | 移植 / 改写                  | 主线取舍                                                                                                           |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [pwremilk f826ecd](https://github.com/pwremilk/komari-theme-Glassmorphism-custom/tree/f826ecd956848d12082cff593f7194f7ed26a6ac)              | WebGL 能力探测               | 真实地球初始化失败、上下文丢失和 WebGL 不可用时均回退现有平铺地图；不强制用户切换设置。                            |
+| [3560912451zz-stack 3aacbda](https://github.com/3560912451zz-stack/komari-theme-Glassmorphism/tree/3aacbda95671297e7b42c30b3a76d5e9d0bf5ea2) | 公网 IP 与异步地理结果过滤   | 完整校验 IPv4、IPv6、IPv4-mapped literal，拒绝保留 / 文档 / 链路本地地址与 0,0；查询代次变化或退出登录后丢弃结果。 |
+| [casiuna 3bb76d9](https://github.com/casiuna/Glassmorphism-Enhanced/tree/3bb76d9fd6f86d9fe56845b12922ee75866f2ed3)                           | IPv6 地理回退                | 节点 IPv4 服务返回无效坐标后顺序尝试 IPv6；保留缓存、权限和国家级坐标兜底。                                        |
+| [zfloong d6ccddbd](https://github.com/zfloong/komari-theme-Glassmorphism/tree/d6ccddbd4b619f83bdac2520bd22a3bf97f58100)                      | 7 / 15 / 30 天 Ping 快捷范围 | 只有后端保留期足够时显示，保留原 6 / 12 小时和自定义范围。                                                         |
 
 第二阶段还把触屏轻点 / 滑动 / 长按判断改写为独立 composable，分组数量默认关闭并按可见节点、离线节点和多分组分别计数。没有合入大批量后端请求、三网中转估算、Worker / Service Worker、个人 API 或整套皮肤。
 

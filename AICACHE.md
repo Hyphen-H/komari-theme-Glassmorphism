@@ -12,6 +12,14 @@
 
 ## 当前任务
 
+- 状态：in-progress，继续吸收优化并发布 v3.4.0（2026-10-12）
+- 用户授权：补充值得融合的优化 / 修复、统一测试、推送 GitHub 并发布新版本；沿用分阶段 Git 存档与来源致谢。
+- 范围：M3 地理地址 / 坐标校验与异步失效，M4 WebGL 地图回退 / 触屏浮窗，M5 可选分组计数与保留期内长范围，M6 回归、来源、版本与发布证据。A4 默认关闭、compact 默认及公共路由契约继续保留。
+- 计划：核对源代码增量 -> 移植 / 改写与聚焦验证 -> 更新致谢 / 3.4.0 -> lint / build / 完整适用回归 -> 推送 main -> 核对 Actions / tag / Release / 下载包 SHA-256 与包内配置。
+- GitHub：origin/main 已刷新，仍为 e0aedb0；gh auth status 被自动审批策略拒绝（never 无法审批），不判断 token 过期，不读取凭据。使用正常 Git 推送触发已有 release workflow，公开 REST API 验证结果。
+- 第二阶段实现：WebGL 能力检测 / 初始化及上下文丢失回退平铺地图；公网 IP 字面量与 IPv4-mapped 校验、IPv6 地理回退、权限与异步代次保护；手机 Tooltip 手势区分；可选分组计数；按后端保留期显示 7 / 15 / 30 天 Ping 范围。来源 pwremilk、3560912451zz-stack、casiuna、zfloong 已写入 README、融合记录与 THIRD-PARTY-NOTICES。
+- 新增验证：fork-followup 13/13、三网与图例 / Issue #59 聚焦 24/24；随后完整视觉矩阵 37/37（49.4 秒）；lint、vue-tsc、build、diff --check 已通过。包为 3.4.0，773 entries，SHA-256 AA9A8DF26475B60B277B54726706D70EB6A99F5FBC925F1ECE6869F73686CF4C。
+
 - 状态：done，A4 可选三网曲线、性能 / 手机优化、致谢及主题包完成（2026-10-12）
 - 用户要求：三网小曲线做成可开启设置，默认保持原展示；性能与外观按收益融合；制作过程分阶段 Git 存档；致谢写作者链接及吸收代码。
 - 里程碑：M5 可选三网曲线、M2 请求缓存 / 后台刷新、M4 手机布局、安全区及兼容性、M3 图表文本转义、M6 验证与来源致谢。
@@ -23,7 +31,7 @@
 - 来源致谢：README 表格列 towersip / thinkemm / VoyagerProbe 的作者和项目链接、吸收内容；`docs/fork-integration-2026-10-12.md` 固定来源完整 SHA、主线取舍。`public/THIRD-PARTY-NOTICES.txt` 将原 MIT 版权与许可完整带入 dist / ZIP。
 - 验证：最终 `bun run lint` / `bun run build` / `git diff --check` 通过；聚焦 Playwright 13/13（23 秒），涵盖默认无额外目录请求、ID 绑定、实时刷新、缺测断线、实际手机滚动不误触、键盘操作、缓存复用、后台暂停恢复、页面切换、重复名称 / HTML 转义、图例实际布局、Issue #59 遮挡回归。手机交互与窄屏布局验证为 Chromium，未声称已在真机 Safari 验证。
 - 最终包：`komari-theme-Glassmorphism-build-1b0cbf7.zip`，3.3.8，7,600,938 bytes / 773 entries，SHA-256 `61a2ceabc2e403c477e65d527c4be28821acef4a07770f171133436c5f49bfb0`。核对顶层仅 manifest / preview / dist，preview 与 docs/preview.png 一致、全部 dist 内容一致、许可存在、A4 默认 false / 卡片默认 compact；版本未改。
-- 可核对截图：`test-results/three-net-desktop.png` / `three-net-mobile.png`，以及 chart-legends-* / ping-tooltip-*。其他候选保留审查报告，未盲目合并 fork 全树、后端插件、个人 API 或 SW。
+- 可核对截图：`test-results/three-net-desktop.png` / `three-net-mobile.png`，以及 chart-legends-_/ ping-tooltip-_。其他候选保留审查报告，未盲目合并 fork 全树、后端插件、个人 API 或 SW。
 
 - 状态：done，详情页负载图表图例与对齐修复（2026-10-12）
 - 目标：按截图补 CPU / 负载图例，统一所有负载图的图例标记、字体、底部基线与标题图标尺寸，并覆盖移动端。
@@ -55,7 +63,24 @@
 - 交付：本地包 `komari-theme-Glassmorphism-build-e0aedb0.zip`；修复前后截图保存在 `test-results/ping-tooltip-*.png`。未提交、推送、改版本或发布，Issue #59 仍打开。
 - 工作区：原有 AICACHE 内容、5 张历史预览图删除及 output/tmp 目录均保留，不纳入本次源码修复。
 
-- 状态：in-progress，本地修复与验证完成，正在发布 v3.3.5
+- 状态：in-progress，Issue #56 暗色模式原生下拉弹层修复
+- 目标：将详情页节点切换器和财务详情中的 6 个原生 `<select>` 替换为主题可控的 reka-ui Select，核对自动发布流程，推送修复并关闭 Issue #56。
+- 里程碑：M4 UI/UX 兼容性修复 + M6 发布验证；不修改 Komari API 或业务计算。
+- 范围：新增共享主题 Select 组件，保留现有值更新与节点导航行为；远端已有 v3.3.7，本次发布版本递增为 v3.3.8。
+- 进度：已完成源码迁移、类型检查、lint、build；已快进到远端最新 main，提交 `e0aedb0` 推送成功，README 与 manifest 已更新到 v3.3.8，Actions/Release 已公开核对成功。Issue #56 尚未关闭：GitHub 浏览器会话未登录，页面已停在登录入口，待登录后回复并关闭。
+
+- 状态：done，Issue #48 已修复、发布并回复关闭
+- 目标：修复 `earthRenderer=tiled` 时首页总览卡片配置被固定卡片覆盖的问题，并让 GitHub Actions 自动执行 lint/build。
+- 里程碑：M4 UI/UX 兼容性修复 + M6 CI/DX；不改变地图渲染器、卡片 schema 或 Komari 接口契约。
+- 已确认缺陷：`NodeGeneralCards.vue` 在平铺地图可见时用 `tiledDefaultCardKeys` 替换 `appStore.generalCardOrder`；隐藏地球后该条件失效，现象与 Issue #48 完全一致。
+- 计划：所有布局统一消费 `generalCardOrder`；补平铺自定义卡片顺序回归；新增 PR/main 自动 lint/build 工作流；发布 v3.3.6 后以 Actions、Release 资产和 Issue 回复为最终证据。
+- 本地验证约束：按用户要求不在本机执行 lint/build，交由 GitHub Actions；本机仅做静态差异、YAML/JSON 与 `git diff --check` 检查。
+- 推送：提交 `b353afb` 已推送 `main`，正在等待 Code Quality、Visual Regression 与 Release On Version Bump 三条 GitHub Actions 结果。
+- 自动验证：Code Quality run `31800244707`、Visual Regression run `31800244708`、Release On Version Bump run `31800244724` 均成功；lint/build 只在 GitHub Actions 执行，未在本机运行。
+- 发布：tag / Release `v3.3.6` 指向 `b353afb37e030ab6c0c66b5a3e4546bd91ec5cd1`；资产 `komari-theme-Glassmorphism-build-b353afb.zip` 为 7,587,372 bytes，GitHub digest 与下载后 SHA-256 均为 `FD19C0D55E2D0C3A6744A3936E393F3A8C9E8B19D58836A7D2D9752476345557`。
+- 包验证：771 个 entries，包内版本 3.3.6，顶层契约保持 `komari-theme.json`、`preview.png`、`dist/`；Issue #48 已附修复、Actions 与 Release 链接后按 completed 关闭。
+
+- 状态：done，v3.3.5 已发布
 - 目标：修复详情页延迟任务卡片、图例和主页 Ping 指标线与 Komari 后台任务排序不一致的问题。
 - 里程碑：M4 UI/UX 兼容性修复，不修改后端任务权重或接口契约。
 - 已确认缺陷：后端 `GetAllPingTasks()` 明确按 `weight ASC, id ASC` 返回；主页重新计算该规则，详情页新版指标路径却按 `getPingMetricStats` 的无保证数组顺序重建任务，可能与后台错位。
@@ -64,6 +89,8 @@
 - 验证：`bun run type-check`、涉及文件 ESLint、`bun run lint`、`bun run build`、`git diff --check` 均通过；生成 `komari-theme-Glassmorphism-build-e212925.zip`，顶层仍为 `komari-theme.json`、`preview.png`、`dist/`。
 - 浏览器限制：托管 Chromium 可执行文件未安装；系统 Chrome 能启动唯一用例但在 Windows 驱动生命周期中停住直至 120 秒外层超时，没有返回断言结果。内置浏览器可加载本地预览，但不能复用 RPC mock，且本机没有 Komari 后端，因此未把该页面作为数据回归证据。
 - 发布目标：`komari-theme.json` 与 README 同步至 v3.3.5；提交只包含 Ping 排序实现、回归夹具、版本和发布文档，排除工作区原有预览图删除与本地目录。
+- 发布完成：提交 `e9a7238fea260299f5404f9be4749aa19360f48b` 已推送 `main`；Release On Version Bump run `31458840152` 与 Visual Regression run `31458840173` 均成功，tag / Release `v3.3.5` 指向该提交。
+- 线上资产：`komari-theme-Glassmorphism-build-e9a7238.zip`，7,593,611 bytes；GitHub digest 与下载后 SHA-256 均为 `FF9127EE7EBD87EFEB9DD4AD58B875DA53D05CCC88C6F95181AC13392ED20A98`，包内版本 3.3.5、771 个 entries，顶层契约完整。此最终交接状态只保留在本地，避免纯文档推送再次触发工作流。
 
 - 状态：done，v3.3.4 已发布
 - 目标：节点卡片剩余 5 天内标红、6–10 天标黄；审计并修复详情页 4 小时 / 1 天历史视图 CPU 空白或异常显示。
