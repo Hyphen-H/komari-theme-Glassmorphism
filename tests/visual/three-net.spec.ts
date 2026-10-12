@@ -76,14 +76,15 @@ test('same-name tasks keep independent legends and tooltip text stays escaped', 
       dispatchAction: (action: Record<string, unknown>) => void
     }
     interface VNode {
-      component?: { exposed?: { chart?: { value?: Chart } }, subTree?: VNode }
+      component?: { exposed?: { chart?: Chart | { value?: Chart } }, subTree?: VNode }
       children?: VNode[]
     }
     const root = (document.querySelector('#app') as HTMLElement & { _vnode?: VNode })._vnode
     const pending = root ? [root] : []
     while (pending.length) {
       const node = pending.pop()!
-      const chart = node.component?.exposed?.chart?.value
+      const exposed = node.component?.exposed?.chart
+      const chart = exposed && 'getOption' in exposed ? exposed : exposed?.value
       if (chart) {
         const option = chart.getOption()
         if (option.series.some(series => series.name.includes('<img'))) {

@@ -12,12 +12,14 @@
 
 ## 当前任务
 
-- 状态：done，本地完成 towersip 三网展示与设置移植（2026-10-12）
+- 状态：done，towersip 三网展示与设置移植已发布 v3.4.1（2026-10-12）
 - 范围：M4 下游共享列宽 / 轻量行高 / 状态配色 / 历史浮窗；M5 独立样式开关、任务选择与按服务器编辑；M6 默认 / 三网 / 手机 / 保存权限回归。保持 compact 的实际宽度，不强制改成 comfortable；修复 Ping 统计浮窗对比度。
 - 来源：towersip a41270e460ee003e33f25091e8f3b3a950675662；保留主线请求缓存、断线、实时更新和手机轻点 / 滑动边界。按服务器设置适配为首页弹窗，保留两个公开路由；保存通过服务层验证管理员并合并最新主题设置。
 - 计划：移植视觉与设置 -> lint / build / 浏览器回归及截图 -> 更新来源与交接 -> Git 阶段存档。
 - 验证：lint / vue-tsc / build / diff --check 通过；完整 Playwright 42/42（55.6 秒）。实测 compact 曲线卡片与默认宽度相同、增加 24px 高度；覆盖三网方柱 / 曲线、空选择总览、实时更新 / 缺测、手机滚动、全局及节点 ID 保存、保留隐藏 / 未编辑节点与最新无关设置、204 成功响应、会话失效禁止保存。Ping 浮窗标签在亮 / 暗色通过 >=4.5:1 实际配色检查。截图位于 test-results/three-net-_.png 与 ping-tooltip-_.png；未声称真机 Safari 测试。
-- 存档：7c0419c 三网展示 / 对比度；f37641d 全局 / 节点编辑器与保存服务 / 致谢。沿用此前发布授权，准备 v3.4.1；完成后核对远端 Actions、tag、Release、ZIP manifest / 默认值 / 许可及 SHA-256。
+- 存档：7c0419c 三网展示 / 对比度；f37641d 全局 / 节点编辑器与保存服务 / 致谢；0b1d9b7 版本与发布记录，已推送 main。
+- 发布证据：v3.4.1 tag 指向 0b1d9b75508f68a5501c443b4eaae405acc7e334；Code Quality 38247509073、Release On Version Bump 38247509052 成功。公开 Release 的 komari-theme-Glassmorphism-build-0b1d9b7.zip 为 7,619,734 bytes / 775 entries，GitHub digest 与下载 SHA-256 均为 bf2ceb4afce12d2bdfb615221e4dcff4bf23bc15649a719c972ee41184836e75；已核对 manifest 3.4.1、顶层布局、许可、compact 默认和两个三网开关默认关闭。
+- M6 远端回归修复：Visual Regression 38247508936 的 4 个失败由测试仅支持旧 vue-echarts ref 结构导致。通过公开 nightly.link 获取失败产物，SHA-256 与 GitHub artifact digest 一致；对实际下载的发布包复现，再兼容 8.0.2 的解包图表实例。发布包完整回归 42/42（57.7 秒）及 lint 已通过，不修改运行时代码或版本；追加测试存档后继续核对远端回归。gh auth status 被自动审批拒绝，未读取凭据或判断 token 过期，使用正常 Git 与公开 API 完成发布核验。
 
 - 状态：done，继续吸收优化并发布 v3.4.0（2026-10-12）
 - 用户授权：补充值得融合的优化 / 修复、统一测试、推送 GitHub 并发布新版本；沿用分阶段 Git 存档与来源致谢。

@@ -16,14 +16,16 @@ for (const scenario of [
     await expect.poll(() => charts.evaluateAll(elements => elements.every((element) => {
       interface VNode {
         el?: Element
-        component?: { exposed?: { chart?: { value?: { getOption: () => unknown } } }, subTree?: VNode }
+        component?: { exposed?: { chart?: { getOption: () => unknown } | { value?: { getOption: () => unknown } } }, subTree?: VNode }
         children?: VNode[]
       }
       const root = (document.querySelector('#app') as HTMLElement & { _vnode?: VNode })._vnode
       const pending = root ? [root] : []
       while (pending.length) {
         const node = pending.pop()!
-        const chart = node.component?.exposed?.chart?.value
+        const exposed = node.component?.exposed?.chart
+        // vue-echarts 8.0.2 exposes an unwrapped instance; older installs use a ref.
+        const chart = exposed && 'getOption' in exposed ? exposed : exposed?.value
         if (node.el === element && chart?.getOption()) {
           Object.assign(element, { __chartLayoutTestInstance: chart })
           return true

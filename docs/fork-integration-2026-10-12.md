@@ -32,8 +32,8 @@
 
 ## 设置与兼容性
 
-- `threeNetPingEnabled=false`：原双面板，不请求额外任务目录，不计算逐任务曲线。
-- `threeNetPingTaskIds=""`：自动选取适用于当前节点的电信、联通、移动；不足时补其他任务。显式 ID 顺序不随后台任务排序变化。
+- `threeNetPingEnabled=false`、`threeNetPingSparkline=false`：默认原双面板，不请求额外任务目录，不计算逐任务曲线。显示三网与新版曲线样式分别控制。
+- `threeNetPingTaskIds="[]"`：空选择回退总览；全局及节点最多选择三个任务，显式 ID 顺序不随后台任务排序变化。兼容旧逗号 ID 配置。
 - `threeNetPingNodeTaskBindings="{}"`：可选 UUID → 最多三个任务 ID，优先于全局；无效 JSON / UUID / ID 安全回退。没有适用任务显示提示，不编造线路。
 - 最近一小时摘要历史保持最多 150 个后端采样点 / 最多 20 个显示时段；查看的是时段平均值，缺测不连线。统计摘要和最新实时状态不会伪造成带时间戳的历史。
 - 最新探测负值显示不可达，丢包使用 NodeStatusPing 的百分数契约；Metric Store `ping.loss` 的比例只在历史显示处乘 100。
@@ -67,3 +67,9 @@
 主题包：`komari-theme-Glassmorphism-build-1b0cbf7.zip`，版本 **3.3.8**，**7,600,938 bytes / 773 entries**，SHA-256 `61a2ceabc2e403c477e65d527c4be28821acef4a07770f171133436c5f49bfb0`。ZIP 顶层保持 `komari-theme.json` / `preview.png` / `dist/`；preview 与 docs/preview.png 一致、所有 dist 文件逐字节一致、包内有 MIT 许可、A4 默认 false / 卡片默认 compact。
 
 截图：`test-results/three-net-desktop.png` / `three-net-mobile.png`、`chart-legends-*.png`、`ping-tooltip-*.png`（本地验证产物，不提交到源码）。构建只报告既有 VueUse PURE 注释与 globe 大块体积提示。
+
+## v3.4.1 发布与追加验证
+
+阶段提交 `7c0419c`、`f37641d`、`0b1d9b7` 已推送，完成上表的三网展示、设置及对比度移植。[v3.4.1](https://github.com/sanrokamlan-prog/komari-theme-Glassmorphism/releases/tag/v3.4.1) 指向 `0b1d9b75508f68a5501c443b4eaae405acc7e334`，公开主题包 SHA-256 为 `bf2ceb4afce12d2bdfb615221e4dcff4bf23bc15649a719c972ee41184836e75`；包内版本、默认开关、布局及许可均已核对。
+
+lint / build 通过，本地完整回归 42/42。远端首次视觉回归的四个失败来自测试读取旧版 vue-echarts ref 结构；在实际下载的发布包复现后，测试兼容 8.0.2 暴露的解包实例，发布包完整回归再次 42/42（57.7 秒）。运行时代码和已发布主题包无需修改。
