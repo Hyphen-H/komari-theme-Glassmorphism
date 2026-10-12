@@ -19,7 +19,7 @@
 - 验证：lint / vue-tsc / build / diff --check 通过；完整 Playwright 42/42（55.6 秒）。实测 compact 曲线卡片与默认宽度相同、增加 24px 高度；覆盖三网方柱 / 曲线、空选择总览、实时更新 / 缺测、手机滚动、全局及节点 ID 保存、保留隐藏 / 未编辑节点与最新无关设置、204 成功响应、会话失效禁止保存。Ping 浮窗标签在亮 / 暗色通过 >=4.5:1 实际配色检查。截图位于 test-results/three-net-_.png 与 ping-tooltip-_.png；未声称真机 Safari 测试。
 - 存档：7c0419c 三网展示 / 对比度；f37641d 全局 / 节点编辑器与保存服务 / 致谢；0b1d9b7 版本与发布记录，已推送 main。
 - 发布证据：v3.4.1 tag 指向 0b1d9b75508f68a5501c443b4eaae405acc7e334；Code Quality 38247509073、Release On Version Bump 38247509052 成功。公开 Release 的 komari-theme-Glassmorphism-build-0b1d9b7.zip 为 7,619,734 bytes / 775 entries，GitHub digest 与下载 SHA-256 均为 bf2ceb4afce12d2bdfb615221e4dcff4bf23bc15649a719c972ee41184836e75；已核对 manifest 3.4.1、顶层布局、许可、compact 默认和两个三网开关默认关闭。
-- M6 远端回归修复：Visual Regression 38247508936 的 4 个失败由测试仅支持旧 vue-echarts ref 结构导致。通过公开 nightly.link 获取失败产物，SHA-256 与 GitHub artifact digest 一致；对实际下载的发布包复现，再兼容 8.0.2 的解包图表实例。发布包完整回归 42/42（57.7 秒）及 lint 已通过，不修改运行时代码或版本；追加测试存档后继续核对远端回归。gh auth status 被自动审批拒绝，未读取凭据或判断 token 过期，使用正常 Git 与公开 API 完成发布核验。
+- M6 远端回归修复：Visual Regression 38247508936 的 4 个失败由测试仅支持旧 vue-echarts ref 结构导致。通过公开 nightly.link 获取失败产物，SHA-256 与 GitHub artifact digest 一致；对实际下载的发布包复现，再兼容 8.0.2 的解包图表实例。发布包完整回归 42/42（57.7 秒）及 lint 已通过，不修改运行时代码或版本；测试修复提交 4ab659f 已推送，Visual Regression 38249323286、Code Quality 38249323330、Release On Version Bump 38249323142 全部成功。gh auth status 被自动审批拒绝，未读取凭据或判断 token 过期，使用正常 Git 与公开 API 完成发布核验。
 
 - 状态：done，继续吸收优化并发布 v3.4.0（2026-10-12）
 - 用户授权：补充值得融合的优化 / 修复、统一测试、推送 GitHub 并发布新版本；沿用分阶段 Git 存档与来源致谢。

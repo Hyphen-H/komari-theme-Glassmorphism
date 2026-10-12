@@ -73,3 +73,5 @@
 阶段提交 `7c0419c`、`f37641d`、`0b1d9b7` 已推送，完成上表的三网展示、设置及对比度移植。[v3.4.1](https://github.com/sanrokamlan-prog/komari-theme-Glassmorphism/releases/tag/v3.4.1) 指向 `0b1d9b75508f68a5501c443b4eaae405acc7e334`，公开主题包 SHA-256 为 `bf2ceb4afce12d2bdfb615221e4dcff4bf23bc15649a719c972ee41184836e75`；包内版本、默认开关、布局及许可均已核对。
 
 lint / build 通过，本地完整回归 42/42。远端首次视觉回归的四个失败来自测试读取旧版 vue-echarts ref 结构；在实际下载的发布包复现后，测试兼容 8.0.2 暴露的解包实例，发布包完整回归再次 42/42（57.7 秒）。运行时代码和已发布主题包无需修改。
+
+测试修复提交 `4ab659f` 的 [Visual Regression](https://github.com/sanrokamlan-prog/komari-theme-Glassmorphism/actions/runs/38249323286)、[Code Quality](https://github.com/sanrokamlan-prog/komari-theme-Glassmorphism/actions/runs/38249323330) 均已成功。
