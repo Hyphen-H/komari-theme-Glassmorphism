@@ -5,6 +5,7 @@ import { useStorageAsync } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { getAuthSession, requirePermission, setAuthSessionFromLogin, verifyLogin } from '@/services/auth.service'
+import { parseIpGeoProviderUrls } from '@/utils/ipGeoProviders'
 import { parseNodePingBindings, parsePingTaskIds } from '@/utils/threeNetSettings'
 
 export type ThemeMode = 'auto' | 'light' | 'dark'
@@ -1108,6 +1109,12 @@ const useAppStore = defineStore('app', () => {
 
   const nodeListCustomTagsVisible = computed<boolean>(() => readBooleanSetting(themeSettings.value, 'nodeListCustomTagsVisible', true))
 
+  /** 前台卡片/列表/详情页统一隐藏自定义标签；后台节点编辑页不受影响。 */
+  const nodeTagsVisible = computed<boolean>(() => readBooleanSetting(themeSettings.value, 'nodeTagsVisible', false))
+
+  /** null=未配置，沿用默认回退链；空数组=显式留空，地球只用后台 region。 */
+  const ipGeoProviderUrls = computed<string[] | null>(() => parseIpGeoProviderUrls(themeSettings.value.ipGeoProviderUrls))
+
   const nodeDetailSectionTabsEnabled = computed<boolean>(() => readBooleanSetting(themeSettings.value, 'nodeDetailSectionTabsEnabled', false))
 
   const gpuChartEnabled = computed<boolean>(() => readBooleanSetting(themeSettings.value, 'gpuChartEnabled', false))
@@ -1340,6 +1347,8 @@ const useAppStore = defineStore('app', () => {
     nodeListMetadataEnabled,
     nodeListMetadataFields,
     nodeListCustomTagsVisible,
+    nodeTagsVisible,
+    ipGeoProviderUrls,
     nodeDetailSectionTabsEnabled,
     gpuChartEnabled,
     threeNetPingEnabled,

@@ -6,6 +6,7 @@ import { METRIC_CHART_GRID, METRIC_CHART_LEGEND } from '@/constants/chart'
 import { useAppStore } from '@/stores/app'
 import { getMetricChartTheme } from '@/utils/chartPalette'
 import { formatBytes } from '@/utils/helper'
+import { resolveValueAxisScale } from '@/utils/pingChartAxisScale'
 import { escapePingTooltip } from '@/utils/pingChartPresentation'
 import MetricChartHeader from './MetricChartHeader.vue'
 import '@/utils/echarts'
@@ -62,6 +63,14 @@ const primaryKind = computed<MetricValueKind>(() => props.series[0]?.kind ?? 'co
 const appStore = useAppStore()
 const chartThemeColors = computed(() => getMetricChartTheme(appStore.isDark))
 
+// 延迟类图表按自身量级固定 Y 轴，避免自动缩放把小波动拉满整幅图；
+// 百分比保持 0-100 固定量程，其他指标维持 ECharts 自动缩放。
+const latencyAxisScale = computed(() => {
+  if (props.percentScale || primaryKind.value !== 'milliseconds')
+    return undefined
+  return resolveValueAxisScale(props.series.flatMap(item => item.data.map(point => point[1])))
+})
+
 const latestText = computed(() => {
   if (props.latest)
     return props.latest
@@ -111,8 +120,8 @@ const chartOption = computed(() => ({
   },
   yAxis: {
     type: 'value',
-    min: props.percentScale ? 0 : undefined,
-    max: props.percentScale ? 100 : undefined,
+    min: props.percentScale ? 0 : latencyAxisScale.value?.min,
+    max: props.percentScale ? 100 : latencyAxisScale.value?.max,
     axisLine: { show: false },
     axisTick: { show: false },
     axisLabel: {
@@ -128,7 +137,9 @@ const chartOption = computed(() => ({
     data: item.data,
     connectNulls: false,
     showSymbol: false,
-    smooth: false,
+    // 延迟曲线平滑可钳制到 x 单调，避免平滑过冲产生尖锐毛刺。
+    smooth: item.kind === 'milliseconds' ? 0.35 : false,
+    smoothMonotone: item.kind === 'milliseconds' ? 'x' : undefined,
     lineStyle: { width: 1.6, type: item.dashed ? 'dashed' : 'solid', color: item.color },
   })),
 }))

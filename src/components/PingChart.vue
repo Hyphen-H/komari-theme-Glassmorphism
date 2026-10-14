@@ -17,6 +17,7 @@ import { loadPingMetricStats, loadPublicPingTasks, queryMetrics } from '@/servic
 import { useAppStore } from '@/stores/app'
 import { ACCESSIBLE_LINE_TYPES, getChartSeriesPalette } from '@/utils/chartPalette'
 import { isPingMetric, normalizeMetricSeriesList, orderPingTasksByBackend, PING_LATENCY_METRIC, pingTaskId, pingTaskName } from '@/utils/metricSeries'
+import { resolvePingAxisScale } from '@/utils/pingChartAxisScale'
 import { escapePingTooltip, pingChartTaskLabels } from '@/utils/pingChartPresentation'
 import { smoothPingChartDisplayRows } from '@/utils/pingChartSmoothing'
 import '@/utils/echarts' // 共享 ECharts 配置
@@ -610,6 +611,9 @@ const pingChartOption = computed(() => {
   const data = chartData.value
   const hours = selectedHours.value
 
+  // 按数据自身量级固定 Y 轴，避免自动缩放把小波动也拉满整幅图。
+  const axisScale = resolvePingAxisScale(data, taskList.map(task => task.id))
+
   // 构建 series，确保颜色与卡片一致
   const series = taskList.map((task, index) => {
     const color = getTaskColor(task.id)
@@ -620,7 +624,9 @@ const pingChartOption = computed(() => {
       name: taskLabels.value.get(task.id),
       type: 'line' as const,
       data: data.map(d => d[task.id] as number | null ?? null),
-      smooth: cutPeak.value ? 0.6 : 0.1,
+      // 平滑曲线可能过冲出尖刺，钳制到 x 单调以保证圆润且不越过相邻采样点。
+      smooth: cutPeak.value ? 0.5 : 0.35,
+      smoothMonotone: 'x' as const,
       showSymbol: false,
       connectNulls: false,
       lineStyle: { width: 1.5, color, cap: 'round' as const, type: lineType },
@@ -706,6 +712,8 @@ const pingChartOption = computed(() => {
     yAxis: {
       type: 'value',
       name: '延迟 (ms)',
+      min: axisScale?.min,
+      max: axisScale?.max,
       nameTextStyle: { color: chartThemeColors.value.textSecondary },
       axisLabel: { fontSize: 11, color: chartThemeColors.value.textSecondary, formatter: '{value}' },
       axisLine: { show: false },

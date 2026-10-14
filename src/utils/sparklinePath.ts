@@ -11,24 +11,59 @@ interface SparklinePoint {
   y: number
 }
 
+/** 最小跨度下限：小于此值时波动贴近平线，避免几毫米的抖动被放大成满幅起伏。 */
+const MIN_SPAN = 8
+/** 跨度相对基线值的最小比例，量级越大越要求可见的起伏。 */
+const MIN_SPAN_RATIO = 0.2
+
+/**
+ * 计算曲线纵向量程。
+ *
+ * 与详情页延迟图使用同一套标定规则（见 `pingChartAxisScale.ts`）：跨度不足时
+ * 向上补齐到最小跨度并把余量平分两侧，使 1ms 波动只占很小的像素高度、
+ * 50ms 波动才占满大部分高度，波动幅度比例可辨。
+ */
 export function robustDomain(values: number[]): { min: number, max: number } {
   if (!values.length)
     return { min: 0, max: 1 }
 
-  const sorted = [...values].sort((left, right) => left - right)
-  const min = sorted[0] ?? 0
-  const max = sorted.at(-1) ?? min
-  if (min === max) {
-    const pad = Math.max(1, Math.abs(min) * 0.08)
-    return { min: min - pad, max: max + pad }
+  const dataMin = Math.min(...values)
+  const dataMax = Math.max(...values)
+
+  if (dataMin === dataMax) {
+    const magnitude = Math.max(Math.abs(dataMin), 1)
+    const pad = Math.max(MIN_SPAN / 2, magnitude * MIN_SPAN_RATIO / 2)
+    return { min: dataMin - pad, max: dataMax + pad }
   }
 
-  const cappedMax = max
-  const pad = Math.max((cappedMax - min) * 0.08, 0.5)
-  return {
-    min: min - pad,
-    max: cappedMax + pad,
+  const magnitude = Math.max(Math.abs(dataMin), Math.abs(dataMax), 1)
+  const span = Math.max(dataMax - dataMin, MIN_SPAN, magnitude * MIN_SPAN_RATIO)
+  const center = (dataMin + dataMax) / 2
+
+  return { min: center - span / 2, max: center + span / 2 }
+}
+
+/**
+ * 生成平滑折线路径。
+ *
+ * 使用水平锚点的三次贝塞尔曲线（Catmull-Rom 转 Bézier）并在锚点处钳制为水平切线，
+ * 因此曲线不会在采样点之间过冲出尖刺，也不会越过相邻采样点的取值范围。
+ */
+function smoothPath(points: SparklinePoint[]): string {
+  if (points.length < 2)
+    return linearPath(points)
+
+  const parts: string[] = [`M ${points[0]!.x.toFixed(2)} ${points[0]!.y.toFixed(2)}`]
+
+  for (let index = 0; index < points.length - 1; index++) {
+    const current = points[index]!
+    const next = points[index + 1]!
+    // 锚点处切线保持水平，相邻两段共用同一控制点，保证曲线连续且不过冲。
+    const midX = (current.x + next.x) / 2
+    parts.push(` C ${midX.toFixed(2)} ${current.y.toFixed(2)}, ${midX.toFixed(2)} ${next.y.toFixed(2)}, ${next.x.toFixed(2)} ${next.y.toFixed(2)}`)
   }
+
+  return parts.join(' ')
 }
 
 function linearPath(points: SparklinePoint[]): string {
@@ -104,13 +139,15 @@ export function buildSparklineGeometry(
   const linePaths: string[] = []
   const fillPaths: string[] = []
   const baseline = height - padding
+  const singlePoint = values.filter(value => typeof value === 'number' && Number.isFinite(value)).length === 1
 
   for (const segment of toSegments(values)) {
     const points = segment.map(item => ({
       x: xFor(item.index),
       y: yFor(item.value),
     }))
-    if (points.length === 1) {
+    // 单点时补一段水平线，让该点仍可见。
+    if (points.length === 1 || singlePoint) {
       const point = points[0]!
       const left = Math.max(0, point.x - 4)
       const right = Math.min(width, point.x + 4)
@@ -118,7 +155,7 @@ export function buildSparklineGeometry(
       points.push({ x: right, y: point.y })
     }
 
-    const linePath = linearPath(points)
+    const linePath = smoothPath(points)
     if (!linePath)
       continue
 

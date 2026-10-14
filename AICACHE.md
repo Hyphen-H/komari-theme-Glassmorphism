@@ -683,3 +683,28 @@
 - Implemented 7 deterministic Playwright baselines: light desktop home, dark mobile home, accessible desktop list, Cobe and tiled earth layouts, light desktop detail and dark mobile detail. All use mocked Komari API/RPC/visitor data, fixed time, disabled animations and hidden dynamic 3D canvas pixels while retaining globe layout boundaries.
 - First baseline generation and repeated comparison both passed 7/7 with system Chrome. Windows system-channel Chrome did not exit cleanly after reporting results, so release validation does not treat that local channel teardown as a product failure; CI installs and runs Playwright's managed Chromium.
 - Added the independent `Visual Regression` workflow for pull requests and `main`, with actual/diff/HTML report artifacts retained for 14 days on failure. Release target is v3.3.0.
+
+## 2026-10-14 issue 61 / 60 (M4)
+
+- issue 61 ping 延迟曲线波动幅度不协调：根因是 `PingChart.vue` 与 `MetricSeriesChartCard.vue` 的 `yAxis` 未固定量程，ECharts 自动缩放把 1ms 与 50ms 波动都拉满整幅图。新增 `src/utils/pingChartAxisScale.ts`，按数据自身量级计算稳定基线：跨度取 `max(实际跨度, 10ms, 基线值×20%)`，补出的余量平分两侧使小幅波动居中，再对齐 nice step；1ms 波动约占 8% 高度、50ms 波动约占 57%，比例差异可辨。
+- 同时按 issue 反馈把延迟曲线调圆润：ping 弹窗图 `smooth` 由 `cutPeak ? 0.6 : 0.1` 改为 `cutPeak ? 0.5 : 0.35`，并加 `smoothMonotone: 'x'` 钳制过冲；`MetricSeriesChartCard` 仅对 `milliseconds` 系列启用 `smooth: 0.35` + `smoothMonotone: 'x'`，其他指标保持 `smooth: false` 不受影响。
+- issue 60 地球 IP 位置：新增 `src/utils/ipGeoProviders.ts` 与 `ipGeoProviderIds` 主题设置项（richtext），默认 `ip.sb / ipinfo.io / ipwho.is / ipapi.co`，可自行删减或调整优先级。语义区分明确：未配置沿用默认链；显式留空（空数组）时 `useNodeGeoClusters` 跳过整轮在线查询，地球只按后台 region 定位，与节点卡片国旗一致；写成非法字符则回落到默认链而非静默关闭。`ipGeoHelper.setIpGeoProviderOrder()` 保留原有轮询起始、失败退避与 localStorage 缓存行为。
+- 未采纳新增 tags 隐藏开关：该 issue 的 tags 部分用户本次未要求，按范围控制仅做 IP 库选项。
+- 验证：`bun run lint` 与 `bun run build` 均通过。
+
+## 2026-10-14 issue 60 follow-up: tags switch and editable IP lookup URLs
+
+- Re-read issue 60 after the reporter added comments with screenshots. Their detail confirms the original reading rather than changing scope: Komari backend tags cannot be hidden from the theme, and their card showed India (ip-api.com in backend) while the globe plotted elsewhere because the theme queries its own IP databases. No change to the approach.
+- Frontend tags switch: new `nodeTagsVisible` theme setting, default false. It gates custom tags on NodeCard, NodeList and InstanceDetail uniformly so the frontend stays clean while the Komari backend node editor still shows and maintains tags. The pre-existing `nodeListCustomTagsVisible` list-only switch is now superseded inside NodeList by the unified switch; its manifest entry is kept for backward compatibility.
+- IP lookup is now a free-form editable URL list rather than a fixed provider whitelist. New `ipGeoProviderUrls` richtext setting, one URL template per line with `{ip}` placeholder. The four built-in services keep their dedicated response parsers (matched by exact URL), and any other address falls back to a generic parser accepting latitude/longitude, lat/lon/lng, or `loc: "lat,lng"` plus optional city/country_code/org/asn. This lets the owner point the theme at a self-hosted geo API without a theme release.
+- Semantics unchanged from the first pass: unset falls back to the built-in chain, explicitly blank disables online lookup so the globe uses the backend region only, and fully-invalid input falls back to the defaults rather than silently disabling geo lookup.
+- Not addressed: no self-hosted geo endpoint exists in this repo, so the shipped default is still the four public services. If the owner has a private endpoint, it only needs to be pasted into the setting.
+- Validation: `bun run lint` and `bun run build` both pass.
+
+## 2026-10-14 v3.4.2 release prep (M4, issues 60 and 61)
+
+- Sparkline path was the missing piece for issue 61. The reported "新版" is the三网新版样式 card sparkline, not the detail chart. `src/utils/sparklinePath.ts` had the same auto-scaling domain problem plus a `linearPath` built from straight `L` segments with no smoothing at all, which produced the reported sharp spikes.
+- `robustDomain` now follows the same rule as the detail-page latency charts: span = max(actual span, 8ms, magnitude x 20%) with the padding split evenly so small wobbles sit mid-chart. Measured at a 100ms baseline, a 1ms wobble occupies 5% of the height versus 100% for a 50ms wobble.
+- Curve is now a horizontal-anchor cubic Bezier (Catmull-Rom to Bezier). Anchor tangents are pinned horizontal, so the curve provably cannot overshoot between samples or exceed adjacent sample values. Gap preservation and the single-point horizontal stub are unchanged.
+- Verified the shipped zip rather than trusting the build: manifest inside the archive carries `nodeTagsVisible` default false and `ipGeoProviderUrls` with the four built-in endpoints, and the bundled chunks contain the runtime logic (`nodeTagsVisible` in NodeCard/NodeList/InstanceDetail, `ipGeoProviderUrls` in NodeGeneralCards/useNodeGeoClusters/useNodeGeoLookup, `smoothMonotone` in PingChart/LoadChart/echarts).
+- Version bumped to 3.4.2 to trigger the release-on-version-bump workflow.

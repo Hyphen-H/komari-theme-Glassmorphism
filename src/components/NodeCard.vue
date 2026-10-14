@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { CardX } from '@/components/ui/card-x'
 import { DataTooltip } from '@/components/ui/data-tooltip'
 import { ProgressThin } from '@/components/ui/progress-thin'
+import { useNodeDisplayCountry } from '@/composables/useNodeGeoLookup'
 import { useNodePingDisplay } from '@/composables/useNodePingDisplay'
 import { useAppStore } from '@/stores/app'
 import { formatBytesPerSecondWithConfig, formatBytesWithConfig, formatDateTime, getStatus, getUptimeDays } from '@/utils/helper'
@@ -185,12 +186,17 @@ const remainingInfoTags = computed<RemainingInfoTag[]>(() => {
 
 const customTags = computed(() => parseTags(props.node.tags).map(t => t.text))
 
+// 卡片国旗与地球落点共用同一份 IP 查询结果，避免两边显示不同国家。
+const displayCountryCode = useNodeDisplayCountry(() => props.node)
+const flagCode = computed(() => displayCountryCode.value || getRegionCode(props.node.region))
+const flagSrc = computed(() => flagCode.value ? `/images/flags/${flagCode.value}.svg` : '')
+
 function getRegionAltText(region: string): string {
   return getRegionDisplayName(region) || getRegionCode(region)
 }
 
-function hasRegion(region: string | null | undefined): boolean {
-  return Boolean(region?.trim())
+function hasFlag(): boolean {
+  return Boolean(flagSrc.value)
 }
 </script>
 
@@ -251,8 +257,8 @@ function hasRegion(region: string | null | undefined): boolean {
         </button>
         <img :src="getOSImage(props.node.os)" :alt="getOSName(props.node.os)" class="size-4">
         <img
-          v-if="hasRegion(props.node.region)"
-          :src="`/images/flags/${getRegionCode(props.node.region)}.svg`"
+          v-if="hasFlag()"
+          :src="flagSrc"
           :alt="getRegionAltText(props.node.region)"
           class="size-5 shrink-0"
         >
@@ -512,7 +518,7 @@ function hasRegion(region: string | null | undefined): boolean {
         </div>
 
         <!-- 自定义标签 -->
-        <div v-if="customTags.length > 0" class="flex flex-wrap gap-1">
+        <div v-if="appStore.nodeTagsVisible && customTags.length > 0" class="flex flex-wrap gap-1">
           <Badge
             v-for="(tag, i) in customTags" :key="i"
             variant="outline"

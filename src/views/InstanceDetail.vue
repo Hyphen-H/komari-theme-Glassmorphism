@@ -504,7 +504,7 @@ const metricCards = computed<MetricCard[]>(() => appStore.detailMetricCardOrder.
           {{ data.online ? '在线' : '离线' }}
         </Badge>
         <!-- 节点自定义标签 -->
-        <div v-if="customTags.length" class="col-span-3 flex flex-wrap gap-1 sm:order-none">
+        <div v-if="appStore.nodeTagsVisible && customTags.length" class="col-span-3 flex flex-wrap gap-1 sm:order-none">
           <Badge
             v-for="(tag, i) in customTags" :key="i" variant="outline"
             class="!text-[11px] rounded text-muted-foreground border-muted-foreground/15 px-1.5 py-0"
