@@ -708,3 +708,18 @@
 - Curve is now a horizontal-anchor cubic Bezier (Catmull-Rom to Bezier). Anchor tangents are pinned horizontal, so the curve provably cannot overshoot between samples or exceed adjacent sample values. Gap preservation and the single-point horizontal stub are unchanged.
 - Verified the shipped zip rather than trusting the build: manifest inside the archive carries `nodeTagsVisible` default false and `ipGeoProviderUrls` with the four built-in endpoints, and the bundled chunks contain the runtime logic (`nodeTagsVisible` in NodeCard/NodeList/InstanceDetail, `ipGeoProviderUrls` in NodeGeneralCards/useNodeGeoClusters/useNodeGeoLookup, `smoothMonotone` in PingChart/LoadChart/echarts).
 - Version bumped to 3.4.2 to trigger the release-on-version-bump workflow.
+
+## 2026-10-14 v3.4.2 README update (M6)
+
+- README bumped to v3.4.2 with a new feature section covering both fixes: the latency axis calibration and the horizontal-anchor Bezier sparkline smoothing for issue 61, and the shared geo lookup plus editable data source list and the nodeTagsVisible switch for issue 60.
+- Theme settings table now lists the two new keys so admins can find them: 地球 IP 查询地址 under 首页布局, 前台显示节点标签 under 快捷控制与列表.
+- Added a matching v3.4.2 entry at the top of the changelog section.
+- Release state at this point: v3.4.2 published as commit 69878cb, asset SHA-256 DFAFAF3F8D24E5D9E52BF71DB2BA7C44FA74E9AB87E2EF767721A9F760B4CB8D, verified by re-downloading the asset and checking manifest version plus bundled chunk contents. All three workflows succeeded and issues 60 and 61 were closed.
+
+## 2026-10-14 README deduplication (M6)
+
+- README had the same version history twice: per-version sections at lines 51-293 and a second "更新日志" changelog at lines 560-769. Together roughly 450 of 813 lines, about 60% of the file, were duplicate release notes.
+- Kept full detail for the three most recent versions (v3.4.2, v3.4.1, v3.4.0) since those describe current behavior, and compressed v3.3.8 through v3.1.0 into a single "历史版本速览" list pointing at GitHub Releases and AICACHE.md for full history.
+- Verified nothing was lost: all 20 non-version functional sections are present and unchanged, all 15 key links survive (including Komari PR 604/602 and komari-web PR 82, which I initially dropped and had to restore), code fences still pair evenly, and section separators are intact.
+- Chose a bullet list over a table for the history because prettier stretches table columns to the longest cell, which pushed the table to 200+ characters per line.
+- Result: 813 lines down to 432, a 47% reduction. lint passes.
