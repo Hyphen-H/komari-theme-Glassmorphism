@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { gpuUsageFromStatus } from '@/utils/gpuHelper'
 import { parseNodeGroups } from '@/utils/groupHelper'
+import { parseTags } from '@/utils/tagHelper'
 
 /** 流量限制类型 */
 export type TrafficLimitType = 'up' | 'down' | 'min' | 'max' | 'sum'
@@ -136,6 +137,26 @@ const useNodesStore = defineStore('nodes', () => {
     for (const node of visibleNodes.value) {
       for (const group of new Set(node.groups))
         counts.set(group, (counts.get(group) ?? 0) + 1)
+    }
+    return counts
+  })
+
+  /** 所有公开可见节点使用过的标签 */
+  const tags = computed(() => {
+    const tagSet = new Set<string>()
+    for (const node of visibleNodes.value) {
+      for (const tag of parseTags(node.tags))
+        tagSet.add(tag.text)
+    }
+    return Array.from(tagSet).sort((left, right) => left.localeCompare(right, 'zh-CN'))
+  })
+
+  /** 标签对应的公开可见节点数 */
+  const tagCounts = computed(() => {
+    const counts = new Map<string, number>()
+    for (const node of visibleNodes.value) {
+      for (const tag of new Set(parseTags(node.tags).map(item => item.text)))
+        counts.set(tag, (counts.get(tag) ?? 0) + 1)
     }
     return counts
   })
@@ -500,6 +521,8 @@ const useNodesStore = defineStore('nodes', () => {
     totalCount,
     groups,
     groupCounts,
+    tags,
+    tagCounts,
     nodesByUuid,
     visibleNodesByUuid,
     // 方法

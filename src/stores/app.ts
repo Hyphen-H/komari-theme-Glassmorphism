@@ -889,6 +889,7 @@ const useAppStore = defineStore('app', () => {
   const lang = ref<Lang>('zh-CN')
   const publicSettings = ref<PublicSettings>()
   const nodeSelectedGroup = useStorageAsync<string>('nodeSelectedGroup', 'all', localStorage)
+  const nodeSelectedTags = useStorageAsync<string[]>('nodeSelectedTags', [], localStorage)
   const favoriteNodeIds = useStorageAsync<string[]>('theme:favorite-nodes:v1', [], localStorage)
   const isLoggedIn = ref<boolean>(getAuthSession().authenticated)
   const authStatus = ref(getAuthSession().status)
@@ -1314,6 +1315,7 @@ const useAppStore = defineStore('app', () => {
     resolvedThemeMode,
     lang,
     nodeSelectedGroup,
+    nodeSelectedTags,
     favoriteNodeIds,
     favoriteNodeIdSet,
     isFavoriteNode,

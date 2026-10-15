@@ -12,6 +12,16 @@
 
 ## 当前任务
 
+- 状态：done，M5 首页标签筛选与自定义 Komari 后台同步（2026-10-15）
+- 目标：在公开首页增加可持久化的标签多选筛选，并把 Hyphen-H/komari-web 中的后台分组/标签筛选、历史值选择器、自动发现主机名和默认展开安装选项同步进主题包。
+- 范围：首页分组、标签、搜索与快捷筛选组合；后台完整构建同步；lint/build、生产主题部署和新旧 Komari 性能对比。
+- 约束：首页匹配任一已选标签；隐藏节点继续遵循登录权限；保持单根节点、实时节点对象和默认 compact 契约。
+- 实现：首页标签源与计数位于 nodes store，选择值由 app store 持久化；HomeView 按“任一标签”与分组、搜索、快捷筛选组合，并提供清除操作。管理端从 `Hyphen-H/komari-web` 提交 `e6c3251` 完整同步，包含后台节点筛选、编辑历史值、自动发现主机名和默认展开安装选项。
+- 运行态：主题版本升至 3.4.3，已部署到 `/opt/komari/data/theme/Glassmorphism`；旧主题保留于 `/opt/komari/Glassmorphism.rollback.20261015_163719`。生产首页、主题资产、后台资产与 Komari 服务均返回正常，7 个 Agent 已重连。GreenCloud `94c74dec…` 已绑定 `auto_discovery_host=Gr`。
+- 验证：`bun run lint`、`vue-tsc --build`、`vite build`、`git diff --check` 通过；主题包 903 entries，含 547 个 admin-app 文件。已确认线上 HomeView bundle 包含标签选择、清除和空状态文案，admin bundle 包含 `auto_discovery_host`。
+- 性能：相同生产配置副本、单核、16 并发、正反顺序各 3 轮；新版后端相对旧版中位数为首页 2065 vs 1482 req/s（+39%），轻量 RPC 3389 vs 3531 req/s（-4%），热启动 192 vs 170ms；空闲 RSS 波动 32–51MiB，版本差异小于轮次波动。生产主题从 3.3.7 到 3.4.3 的首屏 gzip 165KB -> 183KB（+18KB），HomeView gzip 8.84KB -> 9.62KB（+0.79KB）。
+- 阻塞：GitHub fine-grained PAT 仍缺 `Contents: Read and write`，三个仓库的本地提交暂不能推送。
+
 - 状态：done，towersip 三网展示与设置移植已发布 v3.4.1（2026-10-12）
 - 范围：M4 下游共享列宽 / 轻量行高 / 状态配色 / 历史浮窗；M5 独立样式开关、任务选择与按服务器编辑；M6 默认 / 三网 / 手机 / 保存权限回归。保持 compact 的实际宽度，不强制改成 comfortable；修复 Ping 统计浮窗对比度。
 - 来源：towersip a41270e460ee003e33f25091e8f3b3a950675662；保留主线请求缓存、断线、实时更新和手机轻点 / 滑动边界。按服务器设置适配为首页弹窗，保留两个公开路由；保存通过服务层验证管理员并合并最新主题设置。

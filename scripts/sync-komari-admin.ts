@@ -155,7 +155,7 @@ try {
 catch {}
 
 writeFileSync(resolve(targetDir, 'komari-admin-source.json'), `${JSON.stringify({
-  repository: 'https://github.com/komari-monitor/komari-web',
+  repository: 'https://github.com/Hyphen-H/komari-web',
   commit,
   synced_at: new Date().toISOString(),
 }, null, 2)}\n`)

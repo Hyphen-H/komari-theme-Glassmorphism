@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router'
 import DeferredRender from '@/components/DeferredRender.vue'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Empty } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
@@ -25,7 +26,7 @@ import {
   isHighLoadNode,
 } from '@/utils/nodeMetricsHelper'
 import { isNodeMatchSearch } from '@/utils/nodeSearch'
-import { isFreeNode } from '@/utils/tagHelper'
+import { isFreeNode, parseTags } from '@/utils/tagHelper'
 
 interface QuickControlOption {
   key: HomeQuickControlKey
@@ -137,6 +138,10 @@ const groups = computed(() => [
 const quickControlKeys = computed<HomeQuickControlKey[]>(() => appStore.homeQuickControlOrder.filter(key => key !== 'monthlyCost'))
 const quickControls = computed(() => quickControlKeys.value.map(key => quickControlDefinitions[key]))
 const showQuickControls = computed(() => appStore.homeQuickControlsEnabled && quickControls.value.length > 0)
+const selectedTagSet = computed(() => new Set(
+  (Array.isArray(appStore.nodeSelectedTags) ? appStore.nodeSelectedTags : [])
+    .filter((tag): tag is string => typeof tag === 'string' && Boolean(tag.trim())),
+))
 
 watch(
   () => [appStore.homeQuickControlOrder.join('|'), appStore.homeQuickControlsEnabled] as const,
@@ -165,6 +170,17 @@ watch(
     if (cur !== 'all' && !gs.includes(cur)) {
       appStore.nodeSelectedGroup = 'all'
     }
+  },
+  { immediate: true },
+)
+
+watch(
+  () => nodesStore.tags,
+  (tags) => {
+    const available = new Set(tags)
+    const next = [...selectedTagSet.value].filter(tag => available.has(tag))
+    if (next.length !== selectedTagSet.value.size)
+      appStore.nodeSelectedTags = next
   },
   { immediate: true },
 )
@@ -253,8 +269,14 @@ const groupNodeList = computed(() => {
   return nodesStore.visibleNodes.filter(node => node.groups.includes(selectedGroup))
 })
 
+const tagFilteredNodeList = computed(() => {
+  if (selectedTagSet.value.size === 0)
+    return groupNodeList.value
+  return groupNodeList.value.filter(node => parseTags(node.tags).some(tag => selectedTagSet.value.has(tag.text)))
+})
+
 const nodeList = computed(() => {
-  let filtered = groupNodeList.value
+  let filtered = tagFilteredNodeList.value
   if (debouncedSearchText.value.trim()) {
     filtered = filtered.filter(n => isNodeMatchSearch(n, debouncedSearchText.value))
   }
@@ -281,7 +303,7 @@ const deferredNodeCardHeight = computed(() => {
 })
 
 const quickControlCounts = computed<Record<HomeQuickControlKey, number>>(() => {
-  let base = groupNodeList.value
+  let base = tagFilteredNodeList.value
   if (debouncedSearchText.value.trim())
     base = base.filter(n => isNodeMatchSearch(n, debouncedSearchText.value))
 
@@ -294,6 +316,8 @@ const quickControlCounts = computed<Record<HomeQuickControlKey, number>>(() => {
 const emptyDescription = computed(() => {
   if (debouncedSearchText.value.trim())
     return '没有匹配的节点'
+  if (selectedTagSet.value.size)
+    return '当前标签筛选下暂无节点'
   if (activeQuickControl.value)
     return '当前快捷筛选下暂无节点'
   return '暂无节点'
@@ -305,7 +329,7 @@ function clearSearch() {
 }
 
 const nodeListSortResetKey = computed(() => {
-  return `${appStore.nodeSelectedGroup}|${debouncedSearchText.value.trim()}|${activeQuickControl.value ?? 'all'}`
+  return `${appStore.nodeSelectedGroup}|${[...selectedTagSet.value].sort().join(',')}|${debouncedSearchText.value.trim()}|${activeQuickControl.value ?? 'all'}`
 })
 
 function handleNodeClick(node: NodeData) {
@@ -335,6 +359,26 @@ function setQuickControl(key: HomeQuickControlKey) {
     target: activeQuickControl.value ?? 'all',
     detail: { active: Boolean(activeQuickControl.value), result_count: nodeList.value.length },
   })
+}
+
+function toggleTag(tag: string) {
+  const next = new Set(selectedTagSet.value)
+  if (next.has(tag))
+    next.delete(tag)
+  else
+    next.add(tag)
+  appStore.nodeSelectedTags = [...next]
+  void recordVisitorEvent({
+    event: 'filter_change',
+    path: '/',
+    route: 'home',
+    target: 'tags',
+    detail: { selected_count: next.size, result_count: nodeList.value.length },
+  })
+}
+
+function clearTags() {
+  appStore.nodeSelectedTags = []
 }
 
 function setNodeViewMode(mode: 'card' | 'list') {
@@ -544,6 +588,33 @@ const nodeCardGridClass = computed(() => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+          <div v-if="nodesStore.tags.length && activeHomeTool === 'nodes'" class="home-controls-scroll pointer-events-auto min-w-0 overflow-x-auto overscroll-x-contain rounded-sm touch-pan-x">
+            <div class="flex w-max items-center gap-1 rounded-md bg-background/50 px-2 py-1 backdrop-blur-xl">
+              <span class="mr-1 shrink-0 text-xs text-muted-foreground">标签</span>
+              <Badge
+                v-for="tag in nodesStore.tags" :key="tag"
+                as="button"
+                :variant="selectedTagSet.has(tag) ? 'default' : 'outline'"
+                class="h-6 shrink-0 cursor-pointer select-none rounded-md px-2 text-[11px] transition-colors"
+                :aria-pressed="selectedTagSet.has(tag)"
+                :aria-label="`${selectedTagSet.has(tag) ? '取消' : '选择'}标签 ${tag}，${nodesStore.tagCounts.get(tag) ?? 0} 台`"
+                @click="toggleTag(tag)"
+              >
+                {{ tag }}
+                <span class="ml-1 tabular-nums opacity-60">{{ nodesStore.tagCounts.get(tag) ?? 0 }}</span>
+              </Badge>
+              <Button
+                v-if="selectedTagSet.size"
+                variant="ghost" size="icon"
+                class="size-6 shrink-0 rounded-sm text-muted-foreground shadow-none"
+                aria-label="清除标签筛选"
+                title="清除标签筛选"
+                @click="clearTags"
+              >
+                <Icon icon="tabler:x" :width="13" :height="13" />
+              </Button>
             </div>
           </div>
           <TabsContent v-for="g in groups" :key="g.name" :value="g.name" class="pointer-events-auto">
