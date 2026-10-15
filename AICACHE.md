@@ -17,6 +17,7 @@
 - 数据：生产节点的 JP/US 与 region 重复，迁移时只移除与国家/地区重复的代码标签，保留线路机、Softbank、ISP、NAT。
 - 实现：React 默认前台和 Morph 首页均增加持久化国家/地区单选，多标签改为 AND；公开卡片和筛选器忽略已知两位国家码。后台标签编辑器按分号/回车生成可删除卡片并保留历史标签快捷添加，节点编辑增加国家/地区选择。新建节点和自动发现命令默认 `--month-rotate 1`，指定安装版本保持关闭。
 - 验证：komari-web `npm run build` 与 `npm run lint` 通过（lint 仅仓库原有 25 条 warning）；Morph `bun run lint`、`vue-tsc --build`、`vite build`、`git diff --check` 通过。`npm run test:onboarding` 因仓库缺少 `script/onboarding.test.mjs` 无法执行。
+- 部署：主题 v3.4.4 已部署到生产，功能包基于 `9f7d7fc`；旧 v3.4.3 主题位于 `/opt/komari/Glassmorphism.rollback.v343.20261015_172011`。生产数据库已备份到 `/opt/komari/data/komari.db.before-region-tag-cleanup.20261015_172011`，7 台节点重复的 JP/US 标签已移除，其余标签保留。首页、管理端入口及静态资源均返回 200。
 
 - 状态：done，M5 首页标签筛选与自定义 Komari 后台同步（2026-10-15）
 - 目标：在公开首页增加可持久化的标签多选筛选，并把 Hyphen-H/komari-web 中的后台分组/标签筛选、历史值选择器、自动发现主机名和默认展开安装选项同步进主题包。
