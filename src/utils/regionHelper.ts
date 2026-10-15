@@ -1643,6 +1643,13 @@ export function getRegionCode(regionEmoji: string): string {
   return regionInfo.code
 }
 
+const knownRegionCodes = new Set(Object.values(emojiToRegionMap).map(region => region.code))
+
+/** 国家/地区代码由 region 字段承载，不再作为普通自定义标签展示。 */
+export function isRegionCodeTag(tag: string): boolean {
+  return knownRegionCodes.has(tag.trim().toUpperCase())
+}
+
 /**
  * 根据地区代码获取emoji
  * @param code 地区代码（如：HK, CN, US）

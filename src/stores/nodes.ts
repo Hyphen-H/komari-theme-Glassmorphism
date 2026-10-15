@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { gpuUsageFromStatus } from '@/utils/gpuHelper'
 import { parseNodeGroups } from '@/utils/groupHelper'
+import { getRegionDisplayName } from '@/utils/regionHelper'
 import { parseTags } from '@/utils/tagHelper'
 
 /** 流量限制类型 */
@@ -157,6 +158,21 @@ const useNodesStore = defineStore('nodes', () => {
     for (const node of visibleNodes.value) {
       for (const tag of new Set(parseTags(node.tags).map(item => item.text)))
         counts.set(tag, (counts.get(tag) ?? 0) + 1)
+    }
+    return counts
+  })
+
+  /** 所有公开可见节点的国家/地区。 */
+  const regions = computed(() => Array.from(new Set(
+    visibleNodes.value.map(node => node.region?.trim()).filter((region): region is string => Boolean(region)),
+  )).sort((left, right) => getRegionDisplayName(left).localeCompare(getRegionDisplayName(right), 'zh-CN')))
+
+  const regionCounts = computed(() => {
+    const counts = new Map<string, number>()
+    for (const node of visibleNodes.value) {
+      const region = node.region?.trim()
+      if (region)
+        counts.set(region, (counts.get(region) ?? 0) + 1)
     }
     return counts
   })
@@ -523,6 +539,8 @@ const useNodesStore = defineStore('nodes', () => {
     groupCounts,
     tags,
     tagCounts,
+    regions,
+    regionCounts,
     nodesByUuid,
     visibleNodesByUuid,
     // 方法

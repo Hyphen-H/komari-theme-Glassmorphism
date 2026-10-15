@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { isRegionCodeTag } from '@/utils/regionHelper'
 
 /** 计费周期类型 */
 export type BillingCycleType = 'monthly' | 'quarterly' | 'semi_annual' | 'annual' | 'biennial' | 'triennial' | 'quinquennial' | 'once' | 'custom'
@@ -314,7 +315,10 @@ export function parseTags(tags: string | undefined): Array<{ text: string, color
   if (!tags || tags.trim() === '')
     return []
 
-  const tagList = tags.split(';').map(tag => tag.trim()).filter(Boolean)
+  const tagList = tags
+    .split(';')
+    .map(tag => tag.trim())
+    .filter(tag => tag && !isRegionCodeTag(parseTagWithColor(tag).text))
 
   return tagList.map((tag, index) => {
     const { text, color } = parseTagWithColor(tag)

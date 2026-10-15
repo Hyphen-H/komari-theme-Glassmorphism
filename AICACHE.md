@@ -12,6 +12,12 @@
 
 ## 当前任务
 
+- 状态：done，M4/M5 筛选语义、标签编辑器与安装默认项修正（2026-10-15）
+- 目标：前台多标签改为全部匹配并增加国家/地区筛选；国家码不再作为普通标签；后台标签编辑改为分号生成的可增删小卡片；新节点默认展开网络统计月重置日，但不默认启用“指定安装版本（snapshot）”。
+- 数据：生产节点的 JP/US 与 region 重复，迁移时只移除与国家/地区重复的代码标签，保留线路机、Softbank、ISP、NAT。
+- 实现：React 默认前台和 Morph 首页均增加持久化国家/地区单选，多标签改为 AND；公开卡片和筛选器忽略已知两位国家码。后台标签编辑器按分号/回车生成可删除卡片并保留历史标签快捷添加，节点编辑增加国家/地区选择。新建节点和自动发现命令默认 `--month-rotate 1`，指定安装版本保持关闭。
+- 验证：komari-web `npm run build` 与 `npm run lint` 通过（lint 仅仓库原有 25 条 warning）；Morph `bun run lint`、`vue-tsc --build`、`vite build`、`git diff --check` 通过。`npm run test:onboarding` 因仓库缺少 `script/onboarding.test.mjs` 无法执行。
+
 - 状态：done，M5 首页标签筛选与自定义 Komari 后台同步（2026-10-15）
 - 目标：在公开首页增加可持久化的标签多选筛选，并把 Hyphen-H/komari-web 中的后台分组/标签筛选、历史值选择器、自动发现主机名和默认展开安装选项同步进主题包。
 - 范围：首页分组、标签、搜索与快捷筛选组合；后台完整构建同步；lint/build、生产主题部署和新旧 Komari 性能对比。

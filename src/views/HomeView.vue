@@ -26,6 +26,7 @@ import {
   isHighLoadNode,
 } from '@/utils/nodeMetricsHelper'
 import { isNodeMatchSearch } from '@/utils/nodeSearch'
+import { getRegionDisplayName } from '@/utils/regionHelper'
 import { isFreeNode, parseTags } from '@/utils/tagHelper'
 
 interface QuickControlOption {
@@ -185,6 +186,15 @@ watch(
   { immediate: true },
 )
 
+watch(
+  () => nodesStore.regions,
+  (regions) => {
+    if (appStore.nodeSelectedRegion !== 'all' && !regions.includes(appStore.nodeSelectedRegion))
+      appStore.nodeSelectedRegion = 'all'
+  },
+  { immediate: true },
+)
+
 function getNodeMonthlyCostCNY(node: NodeData): number {
   if (excludeFreeNodes.value && isFreeNode(node))
     return 0
@@ -269,10 +279,19 @@ const groupNodeList = computed(() => {
   return nodesStore.visibleNodes.filter(node => node.groups.includes(selectedGroup))
 })
 
+const regionFilteredNodeList = computed(() => {
+  if (appStore.nodeSelectedRegion === 'all')
+    return groupNodeList.value
+  return groupNodeList.value.filter(node => node.region === appStore.nodeSelectedRegion)
+})
+
 const tagFilteredNodeList = computed(() => {
   if (selectedTagSet.value.size === 0)
-    return groupNodeList.value
-  return groupNodeList.value.filter(node => parseTags(node.tags).some(tag => selectedTagSet.value.has(tag.text)))
+    return regionFilteredNodeList.value
+  return regionFilteredNodeList.value.filter((node) => {
+    const nodeTags = new Set(parseTags(node.tags).map(tag => tag.text))
+    return [...selectedTagSet.value].every(tag => nodeTags.has(tag))
+  })
 })
 
 const nodeList = computed(() => {
@@ -318,6 +337,8 @@ const emptyDescription = computed(() => {
     return '没有匹配的节点'
   if (selectedTagSet.value.size)
     return '当前标签筛选下暂无节点'
+  if (appStore.nodeSelectedRegion !== 'all')
+    return '当前国家/地区筛选下暂无节点'
   if (activeQuickControl.value)
     return '当前快捷筛选下暂无节点'
   return '暂无节点'
@@ -329,7 +350,7 @@ function clearSearch() {
 }
 
 const nodeListSortResetKey = computed(() => {
-  return `${appStore.nodeSelectedGroup}|${[...selectedTagSet.value].sort().join(',')}|${debouncedSearchText.value.trim()}|${activeQuickControl.value ?? 'all'}`
+  return `${appStore.nodeSelectedGroup}|${appStore.nodeSelectedRegion}|${[...selectedTagSet.value].sort().join(',')}|${debouncedSearchText.value.trim()}|${activeQuickControl.value ?? 'all'}`
 })
 
 function handleNodeClick(node: NodeData) {
@@ -379,6 +400,17 @@ function toggleTag(tag: string) {
 
 function clearTags() {
   appStore.nodeSelectedTags = []
+}
+
+function setRegion(region: string) {
+  appStore.nodeSelectedRegion = region
+  void recordVisitorEvent({
+    event: 'filter_change',
+    path: '/',
+    route: 'home',
+    target: 'region',
+    detail: { region, result_count: nodeList.value.length },
+  })
 }
 
 function setNodeViewMode(mode: 'card' | 'list') {
@@ -588,6 +620,32 @@ const nodeCardGridClass = computed(() => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+          <div v-if="nodesStore.regions.length && activeHomeTool === 'nodes'" class="home-controls-scroll pointer-events-auto min-w-0 overflow-x-auto overscroll-x-contain rounded-sm touch-pan-x">
+            <div class="flex w-max items-center gap-1 rounded-md bg-background/50 px-2 py-1 backdrop-blur-xl">
+              <span class="mr-1 shrink-0 text-xs text-muted-foreground">国家/地区</span>
+              <Badge
+                as="button"
+                :variant="appStore.nodeSelectedRegion === 'all' ? 'default' : 'outline'"
+                class="h-6 shrink-0 cursor-pointer select-none rounded-md px-2 text-[11px] transition-colors"
+                :aria-pressed="appStore.nodeSelectedRegion === 'all'"
+                @click="setRegion('all')"
+              >
+                全部
+              </Badge>
+              <Badge
+                v-for="region in nodesStore.regions" :key="region"
+                as="button"
+                :variant="appStore.nodeSelectedRegion === region ? 'default' : 'outline'"
+                class="h-6 shrink-0 cursor-pointer select-none rounded-md px-2 text-[11px] transition-colors"
+                :aria-pressed="appStore.nodeSelectedRegion === region"
+                :aria-label="`选择${getRegionDisplayName(region)}，${nodesStore.regionCounts.get(region) ?? 0} 台`"
+                @click="setRegion(region)"
+              >
+                {{ region }} {{ getRegionDisplayName(region) }}
+                <span class="ml-1 tabular-nums opacity-60">{{ nodesStore.regionCounts.get(region) ?? 0 }}</span>
+              </Badge>
             </div>
           </div>
           <div v-if="nodesStore.tags.length && activeHomeTool === 'nodes'" class="home-controls-scroll pointer-events-auto min-w-0 overflow-x-auto overscroll-x-contain rounded-sm touch-pan-x">
