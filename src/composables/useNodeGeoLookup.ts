@@ -55,6 +55,8 @@ export async function ensureNodeGeoLookup(appStore: ReturnType<typeof useAppStor
     const batches: string[][] = []
 
     for (const node of nodes) {
+      if (node.region_manual)
+        continue
       const candidates = getNodeIps(node).filter(isPublicIp)
       if (candidates.some(ip => ipGeoMap.value.has(ip)))
         continue
@@ -103,6 +105,10 @@ export async function ensureNodeGeoLookup(appStore: ReturnType<typeof useAppStor
 
 /** 已解析的 IP →地理位置，未查询到的 IP 返回 undefined。 */
 export function getResolvedIpGeo(node: NodeData): IpGeo | undefined {
+  // Manual region is authoritative. Do not let cached third-party GeoIP move
+  // this node to another country in maps or card flags.
+  if (node.region_manual)
+    return undefined
   return getNodeIps(node).map(ip => ipGeoMap.value.get(ip)).find(Boolean)
 }
 
@@ -121,6 +127,8 @@ export function resetNodeGeoLookup(): void {
  */
 export function useNodeDisplayCountry(node: () => NodeData) {
   return computed(() => {
+    if (node().region_manual)
+      return (getCountryCodeFromRegion(node().region) || '').toUpperCase()
     const geo = getResolvedIpGeo(node())
     const fallback = getCountryCodeFromRegion(node().region)
     return (geo?.countryCode || fallback || '').toUpperCase()

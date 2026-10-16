@@ -87,6 +87,7 @@ export interface Client {
   ipv4?: string
   ipv6?: string
   region: string
+  region_manual?: boolean
   remark?: string
   public_remark: string
   mem_total: number

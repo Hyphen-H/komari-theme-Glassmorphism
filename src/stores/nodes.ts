@@ -26,6 +26,7 @@ export interface NodeData {
   ipv4?: string
   ipv6?: string
   region: string
+  region_manual?: boolean
   remark?: string
   public_remark: string
   mem_total: number
@@ -227,6 +228,7 @@ const useNodesStore = defineStore('nodes', () => {
       ipv4: client.ipv4,
       ipv6: client.ipv6,
       region: client.region,
+      region_manual: client.region_manual,
       remark: client.remark,
       public_remark: client.public_remark,
       mem_total: client.mem_total,

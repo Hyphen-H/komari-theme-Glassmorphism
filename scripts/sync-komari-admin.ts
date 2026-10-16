@@ -146,17 +146,23 @@ writeFileSync(indexPath, `${html.replace(/\r\n?/g, '\n').replace(/[ \t]+$/gm, ''
 cpSync(overrideCss, resolve(targetDir, 'glass-admin.css'))
 
 let commit = 'unknown'
+let dirty = true
 try {
   commit = execFileSync('git', ['-c', `safe.directory=${sourceRoot}`, 'rev-parse', 'HEAD'], {
     cwd: sourceRoot,
     encoding: 'utf8',
   }).trim()
+  dirty = execFileSync('git', ['-c', `safe.directory=${sourceRoot}`, 'status', '--porcelain'], {
+    cwd: sourceRoot,
+    encoding: 'utf8',
+  }).trim().length > 0
 }
 catch {}
 
 writeFileSync(resolve(targetDir, 'komari-admin-source.json'), `${JSON.stringify({
   repository: 'https://github.com/Hyphen-H/komari-web',
   commit,
+  dirty,
   synced_at: new Date().toISOString(),
 }, null, 2)}\n`)
 

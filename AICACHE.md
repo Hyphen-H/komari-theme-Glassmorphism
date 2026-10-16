@@ -12,6 +12,14 @@
 
 ## 当前任务
 
+- 状态：in-progress，M4/M5/M6 节点分类管理与排序（2026-10-16）。工作目录已整理为 `/root/komari/backend`、`web`、`theme`，原仓库及 `/tmp/opencode/komari-web-fork` 未提交工作区保持原样。
+- 已实现：后台菜单统一“节点列表”；节点列表新增 created_at 和国家代码列、添加时间双向排序、国家代码双向排序（未知值最后）；新建节点原子保存分类；单标签原位改名/删除；分组/地区独立选择清空；全局分类浏览、分配、改名合并、删除；批量事务带 expected_* 并发条件，冲突整体回滚。
+- Review 修复：新增/改名草稿隔离，中文输入法回车不提交；新建 HTTP 失败保留弹窗输入；打开编辑弹窗时后台轮询不覆盖分类草稿；排序使用 Radix Select，非手动模式禁用拖拽；手机分类弹窗不透明且限制高度。
+- 验证：Go 分类事务测试（原子成功、冲突回滚、非法请求）及 jsonrpc/client API 包测试通过，聚焦 vet 通过；Web lint 0 error / 25 条既有 warning、tsc/build 通过；主题同步与 lint/build 通过。浏览器 mock 回归通过时间/国家排序、未知置后、标签改名删除、新建失败保留输入、批量前置条件、桌面/手机，无 pageerror。脚本及截图 `/tmp/opencode/komari-classification-*`，未使用生产数据。
+- 追加收尾：Client 新增 region_manual（默认 false 自动模式），手动地区/手动清空在 Agent SQL UPDATE 内保护不被覆盖；编辑可切回自动。主题 NodeData/API/RPC 贯通该字段，手动模式国旗与地图不再采用第三方 IP 查询。标签编辑器支持 Radix 调色选择/恢复默认，分类项展开后可逐节点移除。旧节点自动模式不变，无自动历史数据清理。
+- 追加验证：手动地区/清空/恢复 GeoIP、Agent 不得覆盖分类及创建时间、region_manual 并发模式冲突测试通过；浏览器增加标签改色/恢复默认、单节点移除断言通过。使用新编译后端和完全独立 `/tmp/opencode/komari-classification-runtime` 数据库，真实 REST 安装登录、新建分类与 created_at、批量更新、冲突整体回滚、手动清空和恢复自动及 embedded 管理入口联调通过。未使用生产数据库。
+- 发布边界：尚未提交、推送或部署；主题仍为 3.4.4，ZIP 基于旧 HEAD 命名，属于本地开发包。默认内置归档已经由本轮主题 dist 重建；二进制 `/tmp/opencode/komari-classification-server`。生产上线需备份数据库并同步后端与主题（有新增 region_manual 列），本地结果不代表生产或真机 Safari 已验证。
+
 - 状态：done，M4/M5 筛选语义、标签编辑器与安装默认项修正（2026-10-15）
 - 目标：前台多标签改为全部匹配并增加国家/地区筛选；国家码不再作为普通标签；后台标签编辑改为分号生成的可增删小卡片；新节点默认展开网络统计月重置日，但不默认启用“指定安装版本（snapshot）”。
 - 数据：生产节点的 JP/US 与 region 重复，迁移时只移除与国家/地区重复的代码标签，保留线路机、Softbank、ISP、NAT。

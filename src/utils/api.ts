@@ -68,6 +68,7 @@ export interface NodeInfo {
   kernel_version: string
   gpu_name: string
   region: string
+  region_manual?: boolean
   mem_total: number
   swap_total: number
   disk_total: number
