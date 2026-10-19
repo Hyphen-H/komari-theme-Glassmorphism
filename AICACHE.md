@@ -13,7 +13,8 @@
 ## 当前任务
 
 - 2026-10-19 SSH更换Agent（M4/M5/M6）：用户明确放弃面板发送升级和手填版本，改为复制SSH命令。AgentUpgradeSettings重写为只读GET命令/状态、固定版本说明、服务名（默认komari-agent）、复制失败手选；移除远程发送、版本输入、OTP、控制台。新getAgentReplacementCommand只生成不下发，不含凭据。脚本从systemd MainPID确定程序/工作目录，不使用旧远程脚本PPID，拒绝非Agent名称/容器/非systemd/不支持架构；下载SHA校验后停服务，备份身份/历史，替换重启并核对运行文件hash，失败回滚旧程序，不重装、不改参数。
-- 验证：Go服务名注入/脚本语法/安全步骤测试通过；隔离旧Agent（disable_web_ssh=true）持久化systemd真实SSH命令更换成功，原配置/历史/本地7日保留，新能力确认，无远程任务。桌面1440/手机390浏览器通过无版本输入/无远程写请求、服务名校验、无凭据复制；Web tsc/lint与命名接入回归通过。正在同步主题3.4.9并推送部署，不操作生产Agent。历史远程API为兼容保留，但新页面不调用。
+- 验证：Go服务名注入/脚本语法/安全步骤测试通过；隔离旧Agent（disable_web_ssh=true）持久化systemd真实SSH命令更换成功，原配置/历史/本地7日保留，新能力确认，无远程任务。桌面1440/手机390浏览器通过无版本输入/无远程写请求、服务名校验、无凭据复制；Web tsc/lint与命名接入回归通过。历史远程API为兼容保留，但新页面不调用。
+- 已推送部署v3.4.9：backendce83a05、web2c9e573、themef945d61，均在原功能分支（远端ref已核验）。生产Snapshot-261019-ssh-replacement，主题3.4.9；首页/后台/主题/源码元数据均200，admin source2c9e573 dirty=false；只读更换命令端点正常且不含凭据，未登录401，DB quick_check=ok，节点8条（未删节点），未对生产Agent执行任何更换。回滚 `/opt/komari/rollback-v349-20261019_124158`，脚本 `/root/komari/.buildtmp/deploy-manual.py`；E2E脚本 `/root/komari/.buildtmp/manual-agent-e2e.py`、UI `/root/komari/.buildtmp/manual-agent-browser.mjs`。
 
 - 2026-10-19 升级控制台（M4/M5/M6）：用户反馈升级未见效果/无进度；只读查生产未发现fork升级任务，节点多为1.5.11，普通switch-version fire-and-forget并不会跨仓库切到fork。新增只读弹窗升级控制台，每秒轮询持久化job/events、阶段标签和截断任务输出；支持关闭重开，不开放shell输入；推荐fork主入口，高级普通切换明确来源/可能无变化。
 - 后端增加AgentUpgradeJob/Event表，升级脚本通过15分钟限定单任务随机凭证回报固定阶段（主库只存hash，页面不返回）；审计任务保存无凭证模板，不记录回调令牌。只接受合法向前阶段，拒绝终态重开/过期凭据，不允许Agent回报confirmed；只有service_active且近期目标版本/流量能力匹配才确认。新增任务重发保护。
