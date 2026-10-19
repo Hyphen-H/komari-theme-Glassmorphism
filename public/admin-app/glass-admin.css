@@ -81,13 +81,13 @@
 html,
 body,
 #root,
-.radix-themes {
+.radix-themes[data-is-root-theme='true'] {
   min-height: 100%;
   background-color: transparent !important;
   color: var(--foreground);
 }
 
-.radix-themes {
+.radix-themes[data-is-root-theme='true'] {
   --color-background: transparent !important;
 }
 
@@ -198,10 +198,13 @@ body {
     inset 0 1px 0 rgb(255 255 255 / 34%) !important;
 }
 
+/* Radix 弹层也带 .radix-themes，不能继承根主题的透明背景和 100% 最小高度，
+   否则 Select 等弹层会撑满视口形成大片透明区域；统一给弹层玻璃面板底色。 */
 .rt-DialogContent,
 .rt-PopoverContent,
 .rt-DropdownMenuContent,
-.rt-BaseMenuContent {
+.rt-BaseMenuContent,
+.rt-SelectContent {
   border: 1px solid var(--border) !important;
   border-radius: 8px !important;
   background-color: var(--card) !important;
@@ -220,7 +223,8 @@ body {
 .dark .rt-DialogContent,
 .dark .rt-PopoverContent,
 .dark .rt-DropdownMenuContent,
-.dark .rt-BaseMenuContent {
+.dark .rt-BaseMenuContent,
+.dark .rt-SelectContent {
   box-shadow: 0 16px 42px rgb(0 0 0 / 30%) !important;
 }
 

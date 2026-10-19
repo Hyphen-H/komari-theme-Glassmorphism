@@ -12,6 +12,11 @@
 
 ## 当前任务
 
+- 2026-10-20 节点排序修复（M4，done）：国家排序（A→Z / Z→A）先按国家代码分组，组内改为按添加时间从新到旧，无效时间排后；新增回归脚本 `web/script/node-sort.test.mjs`（`npm run test:node-sort`）。
+- 2026-10-20 排序下拉透明大面板（M4，done）：根因是 `glass-admin.css` 的 `html, body, #root, .radix-themes { min-height:100%; background:transparent!important }` 也命中了 Radix 弹层（弹层同样带 `.radix-themes`），导致 Select 内容被撑到视口高度（约 844px）且透明。将根主题样式限定为 `.radix-themes[data-is-root-theme='true']`，并把 `.rt-SelectContent` 加入玻璃弹层样式（card 背景/边框/阴影/模糊）。
+- 验证：dev 与主题构建下国家排序为 `JP New / JP Old / US New / US Old / No Region`（A→Z），Z→A 反向；主题构建下拉高度 195px（修复前 844px）、背景 `rgba(255,255,255,0.68)`；web lint 0 error/27 条既有 warning、tsc/build 通过；主题 `sync:admin`/lint/build 通过。
+- 已推送部署：web `c9a89b5`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `/admin-app/index.html` sha256 `626fa077...` 与本地一致、`glass-admin.css` sha256 一致，生产 mock 验证下拉与排序均通过，节点数 17 不变；回滚 `/opt/komari/rollback-theme-20261020_075134`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
+
 - 2026-10-19 标签筛选多选改为交集（M4，done）：后台节点列表的标签筛选原来用 `.some`，多选是并集（累加）；改为 `.every`，只有同时带有全部已选标签的节点才显示，与主题首页标签筛选语义一致。新增回归脚本 `web/script/tag-filter.test.mjs`（`npm run test:tag-filter`）。
 - 验证：回归脚本在修复前复现并集（Alpha/Beta/Gamma 全显示），修复后 ISP+GPU 只显示 Alpha，单选与取消选择仍正常；web lint 0 error/27 条既有 warning、tsc/build 通过；主题 `sync:admin`/lint/build 通过。
 - 已推送部署：web `60635cf`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `status.hyphen1.top` 的 `/admin-app/assets/chunk-index-D1XBXskj.js` 与本地构建 sha256 一致且含 `S.every($=>D.includes($))`，节点数保存不变、首页 200、服务 active；回滚 `/opt/komari/rollback-datefield-20261019_165703`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
