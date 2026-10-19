@@ -15,6 +15,7 @@
 - 2026-10-19 升级控制台（M4/M5/M6）：用户反馈升级未见效果/无进度；只读查生产未发现fork升级任务，节点多为1.5.11，普通switch-version fire-and-forget并不会跨仓库切到fork。新增只读弹窗升级控制台，每秒轮询持久化job/events、阶段标签和截断任务输出；支持关闭重开，不开放shell输入；推荐fork主入口，高级普通切换明确来源/可能无变化。
 - 后端增加AgentUpgradeJob/Event表，升级脚本通过15分钟限定单任务随机凭证回报固定阶段（主库只存hash，页面不返回）；审计任务保存无凭证模板，不记录回调令牌。只接受合法向前阶段，拒绝终态重开/过期凭据，不允许Agent回报confirmed；只有service_active且近期目标版本/流量能力匹配才确认。新增任务重发保护。
 - 验证：隔离真实上游828afaf Agent+持久化systemd远程升级通过8阶段有序日志与确认、身份历史保留、15日同步；Go callback auth/expiry/transition tests、相关RPC/API及vet通过；Web tsc/lint、桌面手机控制台pending/下载显示、命名接入回归通过。生产未重发任何升级。准备推送部署v3.4.8；现有日志无法补回历史升级阶段。
+- 已推送部署v3.4.8：backend55178ab、web85c140c、themecddc352，原功能分支；生产Snapshot-261019-upgrade-console，DB迁移agent_upgrade_jobs/events成功、quick_check=ok，首页后台入口资源均200，admin source85c140c dirty=false；本机canary在线且支持同步，无升级job，未重发生产升级。部署前用户侧节点数已8，部署后保持8；未删除节点。回滚 `/opt/komari/rollback-v348-20261019_121936`，脚本 `/root/komari/.buildtmp/deploy-console.py`。升级回调凭证15分钟/单任务，只存hash，不是管理员API key；旧Agent的远程执行日志可能记下短期命令令牌，但仅能上报对应任务阶段，不能读数据/执行命令/确认成功。
 
 - 2026-10-19 流量标签页/远程Agent升级（M4/M5/M6）：用户要求全部完成后推送+部署，包含此前命名节点修复。流量阈值取消折叠，常显Tabs：流量阈值/重置日同步/Agent升级；统计方式及本地/主控来源使用平铺切换。新upgrade-status只返回版本/在线/能力，无凭据；普通版本切换先校验远程控制配置，敏感操作2FA；新upgrade-managed确认后仅向指定在线节点发送固定资产升级任务，校验SHA、备份、systemd独立替换/启动失败回滚，拒绝容器/非root/临时unit/不支持架构。
 - 定制Agent已发布预发布资产：https://github.com/Hyphen-H/komari-agent/releases/tag/managed-traffic-db3c5e8 （源码db3c5e8，上游fork不变；Linux amd64/arm64，版本dev-managed-traffic-db3c5e8，编译update.Repo=Hyphen-H/komari-agent）。GitHub上传digest与公开下载校验一致。界面发送前明确说明未来版本切换来源为fork，现有禁用自动更新参数保持不变。
