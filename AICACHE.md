@@ -15,7 +15,7 @@
 - 2026-10-19 到期日键盘快速输入（M4/M5，done-local）：后台节点账单弹窗的到期日本是原生 `input[type=date]`，键盘只能逐段输入、鼠标点选慢。现改为文本输入：直接敲 `20261104`，也支持 `2026-11-04`、`2026/11/4`、`2026.11.04`、`2026年11月4日`、`261104`；输满 8 位数字或失焦时自动规范为 `YYYY-MM-DD`，回车与保存前再解析兜底；左侧日历按钮保留原生日期选择器；非法输入红框并阻止保存；未设置到期日显示为空（不再回填 `0001-01-01`），保存传 `null`。
 - 实现：web 新增 `src/utils/dateInput.ts`（纯解析：8/6 位数字、带分隔符写法、闰年与非法日期校验、ISO 互转）与 `src/components/ui/date-field.tsx`；`web/src/pages/admin/index.tsx` 账单表单接入，新增 i18n `expiredAtPlaceholder`/`expiredAtTips`/`invalidDate`（五语言）。
 - 验证：dateInput 纯函数用例全过（8 位、6 位、分隔符、闰年、非法日期、空值）；Playwright mock 桌面通过回显、8 位自动识别、保存提交 RFC3339、无到期日为空、非法阻止保存、回车提交，无 pageerror；`web` tsc/lint/build、主题 `sync:admin`/lint/build 通过。
-- 已提交推送：web `f9aa2a4`、theme 本提交（同步管理端），均在原分支；主题版本未提升、生产未部署。
+- 已提交推送并部署：web `f9aa2a4`、theme `27b2e83`（均在原分支，主题版本仍 3.4.10）。生产 backend 未改动（Snapshot-261019-terminal-guard / dccf22f9 不变），仅替换主题 `/opt/komari/data/theme/Glassmorphism`；节点 12 条保留、quick_check=ok、服务 active，公网 `status.hyphen1.top` 的 `/admin-app` 已返回本次新构建（index sha256 `4c7cd48f…`），首页 200。回滚 `/opt/komari/rollback-datefield-20261019_155652`，脚本 `/root/komari/.buildtmp/deploy-datefield.py`。
 
 - 2026-10-19 tri事故与终端防护（M3/M4/M5/M6）：用户在面板Web终端执行更换命令，脚本第4步停Agent时，由Agent自身提供的终端会话连同脚本被当场杀死——未复制身份文件、未替换、未回滚，留下残留锁+停服半完成状态（journalctl无kill记录、无sshd登录、bash_history双粘贴佐证）。根因：面板Web终端/远程执行都是Agent的子进程（同一cgroup）。
 - 恢复：清残留锁；把测试shell手动写入komari-agent.service的cgroup后执行新脚本，实测“拒绝执行”且零副作用；随后从真实SSH通道执行升级成功（6步全过，运行二进制hash=0b49417c，身份/参数/历史保留）。tri现为fork版dev-managed-traffic-db3c5e8、在线、traffic_supported=true；其面板端重置日历史配置22日已被应用（本地参数18日，是否保留由用户定）。tri的自动更新选项未动（fork内置更新源仍是官方仓库komari-monitor/komari-agent，已向用户说明风险）。
