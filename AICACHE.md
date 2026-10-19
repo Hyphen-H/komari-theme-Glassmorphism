@@ -12,6 +12,13 @@
 
 ## 当前任务
 
+- 2026-10-19 流量标签页/远程Agent升级（M4/M5/M6）：用户要求全部完成后推送+部署，包含此前命名节点修复。流量阈值取消折叠，常显Tabs：流量阈值/重置日同步/Agent升级；统计方式及本地/主控来源使用平铺切换。新upgrade-status只返回版本/在线/能力，无凭据；普通版本切换先校验远程控制配置，敏感操作2FA；新upgrade-managed确认后仅向指定在线节点发送固定资产升级任务，校验SHA、备份、systemd独立替换/启动失败回滚，拒绝容器/非root/临时unit/不支持架构。
+- 定制Agent已发布预发布资产：https://github.com/Hyphen-H/komari-agent/releases/tag/managed-traffic-db3c5e8 （源码db3c5e8，上游fork不变；Linux amd64/arm64，版本dev-managed-traffic-db3c5e8，编译update.Repo=Hyphen-H/komari-agent）。GitHub上传digest与公开下载校验一致。界面发送前明确说明未来版本切换来源为fork，现有禁用自动更新参数保持不变。
+- 验证：Go脚本语法/固定校验/禁远控fail-closed测试、相关RPC/API测试与vet通过；隔离原上游828afaf Agent+持久化systemd真实远程升级到fork，版本/近期能力确认、配置历史保留、下发15日同步通过。首次临时unit测试失败后发现unit停止即消失，现脚本明确拒绝，真实持久化unit通过。Web tsc/lint/build与桌面/手机Tabs/升级pending不误报成功、命名接入四平台回归通过。下一步提交、同步主题3.4.7、推送部署与生产只读核验；不操作其他生产Agent或重复节点。
+
+- 2026-10-19 命名节点/自动发现接入拆分修复（M4/M5/M6，done-local）：原添加弹窗混有独立自动发现命令，用户输入BWSG后运行命令会自动注册Auto-linux，再点击添加生成空BWSG。现添加只负责命名/分类，成功返回uuid/token后直接打开专属部署命令，可配置重置日，四平台均使用该token而非--auto-discovery；自动发现移到独立入口，明确不能同时预建命名节点。创建失败保留输入，同步ref阻止双击重复创建，创建后关闭可从列表重新打开部署，不再添加。未修改/清理现有生产重复节点。
+- 已验证：Web tsc/lint/build通过（0 error、27条既有warning）；Playwright桌面1440及手机390通过失败保留、双击只创建一次、BWSG名字/分类提交、重置日变化不改变token、四平台无auto-discovery、重新打开无重复、独立自动发现仍正常，无pageerror。回归已纳入 `web/script/node-onboarding.test.mjs` / `npm run test:node-onboarding`，说明 `web/docs/node-onboarding.md`；真实隔离主控+Agent接入后仍仅1条BWSG，UUID、名字和分类保留，无auto-discovery身份文件。主题sync:admin/lint/build通过，ZIP版本仍3.4.6且dirty=true，为开发包。当前未提交/推送/部署；本修复无需升级Agent。
+
 - 2026-10-19 Agent fork与本机首测：用户授权创建仓库、本机测试及仅关闭本机自动更新。通过 GitHub原生fork创建 `Hyphen-H/komari-agent`，parent/source均为komari-monitor/komari-agent；main与上游main均828afaf，feat/managed-traffic-reset=db3c5e8，只多1提交9文件334增2删。未重写项目或改依赖/许可证。Agent本地origin已设用户fork，upstream保留官方。
 - 本机GreenCloud 10Gbps已升级为dev-managed-traffic-db3c5e8，保留原身份及--month-rotate 7，只给该服务添加--disable-auto-update，未切换更新源。备份 `/opt/komari/agent-canary-backup-20261019_104826` 含旧二进制、服务、身份和历史。重启后新协议回报effective_day=7/effective_managed=false；节点总数7，traffic config行数1，历史573条全部保留并增至574条。运行二进制SHA256=778e3ca7cc8f7077d24bfd5032f7de1ad766b24180b85df6166e03fe14ac91f3。
 - 尚未做生产面板接管/恢复测试：主控未配置admin API key，浏览器drivable=false，未重置密码、伪造登录或直接写数据库。用户可在节点编辑流量设置接管7日并等待确认，再恢复本地；独立真实双端E2E已验证该流程。其他Agent完全未操作；定制fork未发布Release下载资产。
