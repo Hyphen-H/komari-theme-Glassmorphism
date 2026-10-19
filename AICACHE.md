@@ -12,6 +12,12 @@
 
 ## 当前任务
 
+- 状态：done-local，M5/M6 远程修改 Agent 流量重置日（2026-10-19）。范围：backend/web/新 agent/，定期认证 RPC 拉取与回报，独立持久化、恢复本地配置、面板实际值/同步状态。未提交、推送、部署或升级生产 Agent。
+- 实现：AgentTrafficConfig 独立管理表，配置 UUID revision，主控只接受匹配最新 revision/目标值的成功确认；Agent 15 秒串行同步，先确保采集器可用、原子保存 managed-traffic.json（0600、主控地址+token 摘要绑定）后切换运行态，并立即回报；重启恢复、磁盘失败不确认成功。监控读取运行态通过锁保护，不修改全局启动字段。
+- 验证：Go 管理表/确认测试与 Agent 持久化/恢复/失败/并发 race 测试通过，闰年/跨年/缺失日期/时区边界通过；真实隔离主控+Agent 联调在线改15、离线改20、恢复本地1、主控重启待同步7通过，历史文件保留。Web 浏览器 mock 通过非法日期拒绝、保存≠确认、确认生效、恢复本地、旧版提示及桌面/手机；无 pageerror。Agent server 原有公网 DNS/IPv6 Ping 测试失败（环境），聚焦文件/执行/版本切换用例通过，不能声称全量 Agent 测试成功。Linux amd64、arm64 与 Windows amd64 Agent 编译通过，未声称后两者实机运行。
+- 交接：agent 基于上游 828afaf，路径 `/root/komari/agent`；尚无定制 Agent Release 或升级下载 URL，不自动切换更新源。独立 E2E 脚本 `/tmp/opencode/komari-traffic-e2e.py`、UI `/tmp/opencode/komari-traffic-browser.mjs`。主题同步、lint/build 完成（版本仍3.4.5，dirty=true开发包，不是正式Release）；后端/Agent二进制 `/tmp/opencode/komari-server-traffic` 和 `komari-agent-traffic*`，说明 `agent/docs/managed-traffic.md` 与 `backend/docs/agent-traffic-config.md`。生产参数和数据库未更改。
+- 最终交付：`/tmp/opencode/komari-traffic-reset-dev-20261019/` 含主控Linux amd64、Agent Linux amd64/arm64与Windows amd64、主题ZIP及两份说明。最终主题包纳入主控内置归档后再次编译并重跑真实双端E2E通过。Web lint 0 error / 27 warning（25条原有，2条此前TagEditor导出提示）；主题 lint/build通过；已有节点部署命令读取主控目标日，但未替换官方安装脚本/自动更新源。需用户另行授权提交、推送、发布和先升级一台测试节点；不要直接全量升级。
+
 - 状态：done，M4/M5/M6 节点分类管理与排序（2026-10-16）。工作目录已整理为 `/root/komari/backend`、`web`、`theme`，原仓库及 `/tmp/opencode/komari-web-fork` 未提交工作区保持原样。
 - 已实现：后台菜单统一“节点列表”；节点列表新增 created_at 和国家代码列、添加时间双向排序、国家代码双向排序（未知值最后）；新建节点原子保存分类；单标签原位改名/删除；分组/地区独立选择清空；全局分类浏览、分配、改名合并、删除；批量事务带 expected_* 并发条件，冲突整体回滚。
 - Review 修复：新增/改名草稿隔离，中文输入法回车不提交；新建 HTTP 失败保留弹窗输入；打开编辑弹窗时后台轮询不覆盖分类草稿；排序使用 Radix Select，非手动模式禁用拖拽；手机分类弹窗不透明且限制高度。
