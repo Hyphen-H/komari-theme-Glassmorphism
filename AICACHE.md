@@ -12,6 +12,10 @@
 
 ## 当前任务
 
+- 2026-10-19 标签筛选多选改为交集（M4，done）：后台节点列表的标签筛选原来用 `.some`，多选是并集（累加）；改为 `.every`，只有同时带有全部已选标签的节点才显示，与主题首页标签筛选语义一致。新增回归脚本 `web/script/tag-filter.test.mjs`（`npm run test:tag-filter`）。
+- 验证：回归脚本在修复前复现并集（Alpha/Beta/Gamma 全显示），修复后 ISP+GPU 只显示 Alpha，单选与取消选择仍正常；web lint 0 error/27 条既有 warning、tsc/build 通过；主题 `sync:admin`/lint/build 通过。
+- 已推送部署：web `60635cf`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `status.hyphen1.top` 的 `/admin-app/assets/chunk-index-D1XBXskj.js` 与本地构建 sha256 一致且含 `S.every($=>D.includes($))`，节点数保存不变、首页 200、服务 active；回滚 `/opt/komari/rollback-datefield-20261019_165703`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
+
 - 2026-10-19 到期日键盘快速输入（M4/M5，done-local）：后台节点账单弹窗的到期日本是原生 `input[type=date]`，键盘只能逐段输入、鼠标点选慢。现改为文本输入：直接敲 `20261104`，也支持 `2026-11-04`、`2026/11/4`、`2026.11.04`、`2026年11月4日`、`261104`；输满 8 位数字或失焦时自动规范为 `YYYY-MM-DD`，回车与保存前再解析兜底；左侧日历按钮保留原生日期选择器；非法输入红框并阻止保存；未设置到期日显示为空（不再回填 `0001-01-01`），保存传 `null`。
 - 实现：web 新增 `src/utils/dateInput.ts`（纯解析：8/6 位数字、带分隔符写法、闰年与非法日期校验、ISO 互转）与 `src/components/ui/date-field.tsx`；`web/src/pages/admin/index.tsx` 账单表单接入，新增 i18n `expiredAtPlaceholder`/`expiredAtTips`/`invalidDate`（五语言）。
 - 验证：dateInput 纯函数用例全过（8 位、6 位、分隔符、闰年、非法日期、空值）；Playwright mock 桌面通过回显、8 位自动识别、保存提交 RFC3339、无到期日为空、非法阻止保存、回车提交，无 pageerror；`web` tsc/lint/build、主题 `sync:admin`/lint/build 通过。
