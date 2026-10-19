@@ -12,6 +12,11 @@
 
 ## 当前任务
 
+- 2026-10-19 tri事故与终端防护（M3/M4/M5/M6）：用户在面板Web终端执行更换命令，脚本第4步停Agent时，由Agent自身提供的终端会话连同脚本被当场杀死——未复制身份文件、未替换、未回滚，留下残留锁+停服半完成状态（journalctl无kill记录、无sshd登录、bash_history双粘贴佐证）。根因：面板Web终端/远程执行都是Agent的子进程（同一cgroup）。
+- 恢复：清残留锁；把测试shell手动写入komari-agent.service的cgroup后执行新脚本，实测“拒绝执行”且零副作用；随后从真实SSH通道执行升级成功（6步全过，运行二进制hash=0b49417c，身份/参数/历史保留）。tri现为fork版dev-managed-traffic-db3c5e8、在线、traffic_supported=true；其面板端重置日历史配置22日已被应用（本地参数18日，是否保留由用户定）。tri的自动更新选项未动（fork内置更新源仍是官方仓库komari-monitor/komari-agent，已向用户说明风险）。
+- 加固（backend dccf22f）：脚本先比较`/proc/self/cgroup`与目标服务`ControlGroup`，命中（面板终端/远程执行/Agent子进程）即中文拒绝、不产生任何改动；HUP/INT/TERM均触发回滚；回滚输出只写`manual-upgrade.log`（防终端断开时SIGPIPE杀死回滚）；成功确认后立即释放锁不依赖trap；锁提示含手动恢复步骤。测试：单元测试加ControlGroup/拒绝/HUP/log断言；E2E加“写入目标服务cgroup执行必须被拒绝且零副作用”；UI加Web终端警告（web cbf4f01）。
+- 已推送部署v3.4.10：backenddccf22f、webcbf4f01、theme本次提交，均在原功能分支。生产Snapshot-261019-terminal-guard（hashdccf22f9），主题3.4.10；首页/后台/主题/源码元数据200，admin sourcecbf4f01 dirty=false；服务中的更换命令含新防护，未登录401，DB quick_check=ok，节点8条未删。回滚 `/opt/komari/rollback-v3410-20261019_143414`，脚本 `/root/komari/.buildtmp/deploy-manual.py`。
+
 - 2026-10-19 SSH更换Agent（M4/M5/M6）：用户明确放弃面板发送升级和手填版本，改为复制SSH命令。AgentUpgradeSettings重写为只读GET命令/状态、固定版本说明、服务名（默认komari-agent）、复制失败手选；移除远程发送、版本输入、OTP、控制台。新getAgentReplacementCommand只生成不下发，不含凭据。脚本从systemd MainPID确定程序/工作目录，不使用旧远程脚本PPID，拒绝非Agent名称/容器/非systemd/不支持架构；下载SHA校验后停服务，备份身份/历史，替换重启并核对运行文件hash，失败回滚旧程序，不重装、不改参数。
 - 验证：Go服务名注入/脚本语法/安全步骤测试通过；隔离旧Agent（disable_web_ssh=true）持久化systemd真实SSH命令更换成功，原配置/历史/本地7日保留，新能力确认，无远程任务。桌面1440/手机390浏览器通过无版本输入/无远程写请求、服务名校验、无凭据复制；Web tsc/lint与命名接入回归通过。历史远程API为兼容保留，但新页面不调用。
 - 已推送部署v3.4.9：backendce83a05、web2c9e573、themef945d61，均在原功能分支（远端ref已核验）。生产Snapshot-261019-ssh-replacement，主题3.4.9；首页/后台/主题/源码元数据均200，admin source2c9e573 dirty=false；只读更换命令端点正常且不含凭据，未登录401，DB quick_check=ok，节点8条（未删节点），未对生产Agent执行任何更换。回滚 `/opt/komari/rollback-v349-20261019_124158`，脚本 `/root/komari/.buildtmp/deploy-manual.py`；E2E脚本 `/root/komari/.buildtmp/manual-agent-e2e.py`、UI `/root/komari/.buildtmp/manual-agent-browser.mjs`。
