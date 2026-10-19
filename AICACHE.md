@@ -12,6 +12,10 @@
 
 ## 当前任务
 
+- 2026-10-19 Agent fork与本机首测：用户授权创建仓库、本机测试及仅关闭本机自动更新。通过 GitHub原生fork创建 `Hyphen-H/komari-agent`，parent/source均为komari-monitor/komari-agent；main与上游main均828afaf，feat/managed-traffic-reset=db3c5e8，只多1提交9文件334增2删。未重写项目或改依赖/许可证。Agent本地origin已设用户fork，upstream保留官方。
+- 本机GreenCloud 10Gbps已升级为dev-managed-traffic-db3c5e8，保留原身份及--month-rotate 7，只给该服务添加--disable-auto-update，未切换更新源。备份 `/opt/komari/agent-canary-backup-20261019_104826` 含旧二进制、服务、身份和历史。重启后新协议回报effective_day=7/effective_managed=false；节点总数7，traffic config行数1，历史573条全部保留并增至574条。运行二进制SHA256=778e3ca7cc8f7077d24bfd5032f7de1ad766b24180b85df6166e03fe14ac91f3。
+- 尚未做生产面板接管/恢复测试：主控未配置admin API key，浏览器drivable=false，未重置密码、伪造登录或直接写数据库。用户可在节点编辑流量设置接管7日并等待确认，再恢复本地；独立真实双端E2E已验证该流程。其他Agent完全未操作；定制fork未发布Release下载资产。
+
 - 状态：done-local，M5/M6 远程修改 Agent 流量重置日（2026-10-19）。范围：backend/web/新 agent/，定期认证 RPC 拉取与回报，独立持久化、恢复本地配置、面板实际值/同步状态。未提交、推送、部署或升级生产 Agent。
 - 实现：AgentTrafficConfig 独立管理表，配置 UUID revision，主控只接受匹配最新 revision/目标值的成功确认；Agent 15 秒串行同步，先确保采集器可用、原子保存 managed-traffic.json（0600、主控地址+token 摘要绑定）后切换运行态，并立即回报；重启恢复、磁盘失败不确认成功。监控读取运行态通过锁保护，不修改全局启动字段。
 - 验证：Go 管理表/确认测试与 Agent 持久化/恢复/失败/并发 race 测试通过，闰年/跨年/缺失日期/时区边界通过；真实隔离主控+Agent 联调在线改15、离线改20、恢复本地1、主控重启待同步7通过，历史文件保留。Web 浏览器 mock 通过非法日期拒绝、保存≠确认、确认生效、恢复本地、旧版提示及桌面/手机；无 pageerror。Agent server 原有公网 DNS/IPv6 Ping 测试失败（环境），聚焦文件/执行/版本切换用例通过，不能声称全量 Agent 测试成功。Linux amd64、arm64 与 Windows amd64 Agent 编译通过，未声称后两者实机运行。
