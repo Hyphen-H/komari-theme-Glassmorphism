@@ -14,7 +14,7 @@
 
 - 2026-10-20 节点排序增强（M5，done）：公开首页工具栏新增「节点排序」下拉，卡片/列表共用并 localStorage 记忆：默认排序、剩余时间（少→多，无到期/长期排后）、月价值（`price / billing_cycle × 30`，跨币种按汇率折 CNY，高→低）、剩余总价值（按剩余天数/周期折算并折 CNY，高→低）；未登录且开启隐藏价格时只保留默认/剩余时间，避免间接暴露价格。后台节点列表排序下拉同步新增剩余时间/月价值/剩余价值三项。公开页快捷排序与下拉排序互斥，切换下拉会重置列表列排序。新增回归 `web/script/admin-sort.test.mjs`（`npm run test:admin-sort`）。
 - 验证：生产公开页剩余时间 9/15/23/29/31/68/308… 升序（25 卡），月价值 28.16/18.28/… 降序、剩余价值 331.37/214.49/…/0.9 降序（22 张有价卡），刷新后选择保留；生产后台 mock 5 节点三种排序断言通过；`test:admin-sort`、`test:billing-defaults` 通过；主题 lint/build、web tsc/lint/build 通过。
-- 部署：web `c83e5cd`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `/admin-app/index.html` sha256 `aef21ef3...` 与本地一致；节点 26；回滚 `/opt/komari/rollback-theme-20261020_095008`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
+- 部署：web `c83e5cd`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `/admin-app/index.html` sha256 `aef21ef3...` 与本地一致；节点 25；回滚 `/opt/komari/rollback-theme-20261020_095800`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
 
 - 2026-10-20 账单默认与价值展示（M4/M5，done）：后台账单弹窗未设置过计费时默认货币 `￥`、周期 365 天（年），保存按默认值提交；后台节点列表、公开节点列表与公开展示卡片新增「已用价值 / 剩余价值」，已用价值 = 本期价格 − 剩余价值，剩余价值按剩余天数占计费周期比例折算（长期/一次性/过期规则与主题原 `getRemainingValue` 一致）。新增回归脚本 `web/script/billing-defaults.test.mjs`（`npm run test:billing-defaults`）。
 - 验证：dev 与生产 mock 均确认账单默认 `￥`/365 且保存提交 365/￥；￥99/年、余 68 天的节点显示 `已用价值 ￥80.56`、`剩余价值 ￥18.44`（公开卡片、公开列表、后台账单列三处一致）；web lint 0 error/27 条既有 warning、tsc/build 通过；主题 `sync:admin`/lint/build 通过。
