@@ -12,6 +12,10 @@
 
 ## 当前任务
 
+- 2026-10-20 节点列表横向滚动条常驻页底（M5，done）：节点列表表格 `min-width: 1480px` 超出视口时，表格自身的横向滚动条被隐藏，改由页面底部常驻一条自绘横向滚动条（`position: sticky; bottom: 0`）接管：滑块宽度/位置跟随表格 `scrollWidth/scrollLeft`，支持拖动滑块、点击轨道跳转、方向键 / Home / End 键盘操作；页面纵向滚动时滚动条固定在视口底部，任意时刻都能横向查看最右侧的备注与客户端版本列。页面容器去掉底部内边距（`p-4` → `px-4 pt-4`）使滚动条更贴近窗口底部。
+- 验证：生产 mock 校验滚动条常驻视口底部（track y=774，视口高 800）、拖动滑块表格同步滚动（scrollLeft 329）、纵向滚动后位置不变；回归脚本 `web/script/node-table-layout.test.mjs` 增补常驻滚动条断言；`test:node-table-layout`、`test:billing-defaults`、`test:admin-sort`、`test:tag-filter`、`test:node-sort` 全部通过；web lint 0 error/27 条既有 warning、tsc/build 通过；主题 `sync:admin`/lint/build 通过。
+- 部署：web `fe56dab`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `/admin-app/index.html` sha256 `aa7948c9...` 与本地一致；节点 27；回滚 `/opt/komari/rollback-theme-20261020_103006`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
+
 - 2026-10-20 节点列表列重排 + 添加节点流量输入（M5，done）：后台节点列表列顺序改为 排序 / 勾选 / 名称 / IP / 国家 / 添加时间 / 分组 / 账单 / 操作 / 私有备注 / 客户端版本，客户端版本移到最右、备注倒数第二；备注不再截断（字号不变，靠换行 + 表格 `min-width: 1480px` 触发横向滚动条容纳长文本）。添加节点弹窗新增「流量」输入：单位缺省按 G 计算，支持 `1.5T` / `500M` / `2TB` 等写法并实时显示换算结果（新增 `web/src/utils/unitHelper.ts#parseTrafficBytes`），创建成功后补写 `traffic_limit`（`traffic_limit_type=sum`，新增接口不接收该字段）。新增回归 `web/script/node-table-layout.test.mjs`（`npm run test:node-table-layout`）。
 - 验证：生产 mock 校验表头顺序（客户端版本最后、备注倒数第二）、68 字备注完整换行显示、表格 1480px 在 1133px 容器内横向滚动、`1.5T` 提交 `traffic_limit=1649267441664`、`100` 折算 100 GB；`test:node-table-layout`、`test:billing-defaults`、`test:admin-sort`、`test:tag-filter`、`test:node-sort` 全部通过；web lint 0 error/27 条既有 warning、tsc/build 通过；主题 `sync:admin`/lint/build 通过。
 - 部署：web `e79be92`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `/admin-app/index.html` sha256 `cacf844c...` 与本地一致；节点 27；回滚 `/opt/komari/rollback-theme-20261020_101405`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
