@@ -14,7 +14,7 @@
 
 - 2026-10-20 节点列表列重排 + 添加节点流量输入（M5，done）：后台节点列表列顺序改为 排序 / 勾选 / 名称 / IP / 国家 / 添加时间 / 分组 / 账单 / 操作 / 私有备注 / 客户端版本，客户端版本移到最右、备注倒数第二；备注不再截断（字号不变，靠换行 + 表格 `min-width: 1480px` 触发横向滚动条容纳长文本）。添加节点弹窗新增「流量」输入：单位缺省按 G 计算，支持 `1.5T` / `500M` / `2TB` 等写法并实时显示换算结果（新增 `web/src/utils/unitHelper.ts#parseTrafficBytes`），创建成功后补写 `traffic_limit`（`traffic_limit_type=sum`，新增接口不接收该字段）。新增回归 `web/script/node-table-layout.test.mjs`（`npm run test:node-table-layout`）。
 - 验证：生产 mock 校验表头顺序（客户端版本最后、备注倒数第二）、68 字备注完整换行显示、表格 1480px 在 1133px 容器内横向滚动、`1.5T` 提交 `traffic_limit=1649267441664`、`100` 折算 100 GB；`test:node-table-layout`、`test:billing-defaults`、`test:admin-sort`、`test:tag-filter`、`test:node-sort` 全部通过；web lint 0 error/27 条既有 warning、tsc/build 通过；主题 `sync:admin`/lint/build 通过。
-- 部署：web `e79be92`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `/admin-app/index.html` sha256 `cacf844c...` 与本地一致；节点 27；回滚 `/opt/komari/rollback-theme-20261020_101243`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
+- 部署：web `e79be92`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `/admin-app/index.html` sha256 `cacf844c...` 与本地一致；节点 27；回滚 `/opt/komari/rollback-theme-20261020_101405`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
 
 - 2026-10-20 节点排序增强（M5，done）：公开首页工具栏新增「节点排序」下拉，卡片/列表共用并 localStorage 记忆：默认排序、剩余时间（少→多，无到期/长期排后）、月价值（`price / billing_cycle × 30`，跨币种按汇率折 CNY，高→低）、剩余总价值（按剩余天数/周期折算并折 CNY，高→低）；未登录且开启隐藏价格时只保留默认/剩余时间，避免间接暴露价格。后台节点列表排序下拉同步新增剩余时间/月价值/剩余价值三项。公开页快捷排序与下拉排序互斥，切换下拉会重置列表列排序。新增回归 `web/script/admin-sort.test.mjs`（`npm run test:admin-sort`）。
 - 验证：生产公开页剩余时间 9/15/23/29/31/68/308… 升序（25 卡），月价值 28.16/18.28/… 降序、剩余价值 331.37/214.49/…/0.9 降序（22 张有价卡），刷新后选择保留；生产后台 mock 5 节点三种排序断言通过；`test:admin-sort`、`test:billing-defaults` 通过；主题 lint/build、web tsc/lint/build 通过。
