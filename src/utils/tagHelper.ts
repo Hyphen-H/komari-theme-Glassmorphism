@@ -415,6 +415,25 @@ export function getRemainingValue(
 }
 
 /**
+ * 计算已用价值（本期价格 - 剩余价值），最少为 0
+ * - 价格 <= 0：返回 0
+ * - 剩余价值高于本期价格（提前预付多个周期）时按 0 兜底
+ * @param price 价格
+ * @param billingCycle 计费周期（天）
+ * @param expiredAt 过期时间
+ * @returns 已用价值金额
+ */
+export function getUsedValue(
+  price: number,
+  billingCycle: number,
+  expiredAt: string | number | undefined,
+): number {
+  if (!price || price <= 0)
+    return 0
+  return Math.max(0, price - getRemainingValue(price, billingCycle, expiredAt))
+}
+
+/**
  * 格式化金额（用于剩余价值显示），自动去除多余的小数 0
  * @param value 金额
  * @param currency 货币符号

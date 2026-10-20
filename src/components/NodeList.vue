@@ -17,7 +17,7 @@ import { formatBytesPerSecondWithConfig, formatBytesWithConfig, formatDateTime, 
 import { getRealtimeTotalSpeed, getTrafficUsed, getTrafficUsedPercentage, hasTrafficLimit } from '@/utils/nodeMetricsHelper'
 import { getOSImage, getOSName } from '@/utils/osImageHelper'
 import { getRegionCode, getRegionDisplayName } from '@/utils/regionHelper'
-import { formatPriceWithCycle, getDaysUntilExpired, getExpireStatus, parseTags } from '@/utils/tagHelper'
+import { formatCurrencyValue, formatPriceWithCycle, getDaysUntilExpired, getExpireStatus, getRemainingValue, getUsedValue, parseTags } from '@/utils/tagHelper'
 
 interface ColumnConfig {
   key: string
@@ -277,6 +277,14 @@ function getPriceTags(node: NodeData): Array<string> {
   return tags
 }
 
+function getValueText(node: NodeData): string {
+  const used = formatCurrencyValue(getUsedValue(node.price, node.billing_cycle, node.expired_at), node.currency)
+  const remaining = formatCurrencyValue(getRemainingValue(node.price, node.billing_cycle, node.expired_at), node.currency)
+  return appStore.lang === 'zh-CN'
+    ? `已用 ${used} · 剩余 ${remaining}`
+    : `Used ${used} · Left ${remaining}`
+}
+
 function getNodeMetadataItems(node: NodeData): NodeMetadataItem[] {
   return nodeMetadataItemsByUuid.value[node.uuid] ?? []
 }
@@ -467,6 +475,13 @@ function buildNodeMetadataItems(node: NodeData): NodeMetadataItem[] {
                     <span v-for="(tag, tagIndex) in getPriceTags(node)" :key="tagIndex" :class="!!tagIndex && 'ml-3'">
                       {{ tag }}
                     </span>
+                  </div>
+                  <div
+                    v-if="showPrice && node.price > 0"
+                    class="text-[11px] text-muted-foreground truncate"
+                    :title="getValueText(node)"
+                  >
+                    {{ getValueText(node) }}
                   </div>
                 </div>
 

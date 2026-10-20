@@ -14,7 +14,7 @@ import { formatBytesPerSecondWithConfig, formatBytesWithConfig, formatDateTime, 
 import { getDiskPercentage, getMemoryPercentage, getTrafficUsed, getTrafficUsedPercentage, hasTrafficLimit } from '@/utils/nodeMetricsHelper'
 import { getOSImage, getOSName } from '@/utils/osImageHelper'
 import { getRegionCode, getRegionDisplayName } from '@/utils/regionHelper'
-import { formatCurrencyValue, formatPriceWithCycle, getDaysUntilExpired, getExpireStatus, getRemainingValue, isFreePrice, parseTags } from '@/utils/tagHelper'
+import { formatCurrencyValue, formatPriceWithCycle, getDaysUntilExpired, getExpireStatus, getRemainingValue, getUsedValue, isFreePrice, parseTags } from '@/utils/tagHelper'
 
 const props = withDefaults(defineProps<{
   node: NodeData
@@ -176,10 +176,21 @@ const remainingInfoTags = computed<RemainingInfoTag[]>(() => {
   }
 
   if (showPrice.value) {
-    const text = isFreePrice(node.price)
-      ? lang === 'zh-CN' ? '无' : 'N/A'
-      : formatCurrencyValue(getRemainingValue(node.price, node.billing_cycle, node.expired_at), node.currency)
-    items.push({ icon: 'tabler:coins', text })
+    if (isFreePrice(node.price)) {
+      items.push({ icon: 'tabler:coins', text: lang === 'zh-CN' ? '无' : 'N/A' })
+    }
+    else {
+      items.push({
+        icon: 'tabler:coin',
+        prefix: lang === 'zh-CN' ? '已用' : 'Used',
+        value: formatCurrencyValue(getUsedValue(node.price, node.billing_cycle, node.expired_at), node.currency),
+      })
+      items.push({
+        icon: 'tabler:coins',
+        prefix: lang === 'zh-CN' ? '剩余' : 'Left',
+        value: formatCurrencyValue(getRemainingValue(node.price, node.billing_cycle, node.expired_at), node.currency),
+      })
+    }
   }
   return items
 })

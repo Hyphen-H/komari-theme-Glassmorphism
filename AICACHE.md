@@ -12,6 +12,10 @@
 
 ## 当前任务
 
+- 2026-10-20 账单默认与价值展示（M4/M5，done）：后台账单弹窗未设置过计费时默认货币 `￥`、周期 365 天（年），保存按默认值提交；后台节点列表、公开节点列表与公开展示卡片新增「已用价值 / 剩余价值」，已用价值 = 本期价格 − 剩余价值，剩余价值按剩余天数占计费周期比例折算（长期/一次性/过期规则与主题原 `getRemainingValue` 一致）。新增回归脚本 `web/script/billing-defaults.test.mjs`（`npm run test:billing-defaults`）。
+- 验证：dev 与生产 mock 均确认账单默认 `￥`/365 且保存提交 365/￥；￥99/年、余 68 天的节点显示 `已用价值 ￥80.56`、`剩余价值 ￥18.44`（公开卡片、公开列表、后台账单列三处一致）；web lint 0 error/27 条既有 warning、tsc/build 通过；主题 `sync:admin`/lint/build 通过。
+- 已推送部署：web `11fb331`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `/admin-app/index.html` sha256 `a14a9d5d...` 与本地一致，公开首页卡片已验证显示；节点数 20 不变；回滚 `/opt/komari/rollback-theme-20261020_084159`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
+
 - 2026-10-20 节点排序修复（M4，done）：国家排序（A→Z / Z→A）先按国家代码分组，组内改为按添加时间从新到旧，无效时间排后；新增回归脚本 `web/script/node-sort.test.mjs`（`npm run test:node-sort`）。
 - 2026-10-20 排序下拉透明大面板（M4，done）：根因是 `glass-admin.css` 的 `html, body, #root, .radix-themes { min-height:100%; background:transparent!important }` 也命中了 Radix 弹层（弹层同样带 `.radix-themes`），导致 Select 内容被撑到视口高度（约 844px）且透明。将根主题样式限定为 `.radix-themes[data-is-root-theme='true']`，并把 `.rt-SelectContent` 加入玻璃弹层样式（card 背景/边框/阴影/模糊）。
 - 验证：dev 与主题构建下国家排序为 `JP New / JP Old / US New / US Old / No Region`（A→Z），Z→A 反向；主题构建下拉高度 195px（修复前 844px）、背景 `rgba(255,255,255,0.68)`；web lint 0 error/27 条既有 warning、tsc/build 通过；主题 `sync:admin`/lint/build 通过。
