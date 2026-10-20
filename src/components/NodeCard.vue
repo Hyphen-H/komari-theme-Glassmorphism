@@ -43,7 +43,7 @@ function handleKeyboardOpen(event: KeyboardEvent) {
 }
 
 interface RemainingInfoTag {
-  icon: string
+  icon?: string
   text?: string
   prefix?: string
   value?: string
@@ -62,7 +62,7 @@ const isMiniNodeCard = computed(() => appStore.nodeCardSize === 'mini')
 const nodeCardXSize = computed(() => appStore.nodeCardSize === 'large' ? 'large' : 'medium')
 const nodeCardContentClass = computed(() => appStore.nodeCardSize === 'large' ? 'gap-4' : isMiniNodeCard.value ? 'gap-2' : 'gap-3')
 const nodeCardContentPaddingClass = computed(() => isMiniNodeCard.value ? 'pb-2' : '')
-const nodeCardMetricGridClass = 'grid-cols-3'
+const nodeCardMetricGridClass = 'grid-cols-[1fr_1fr_1.3fr]'
 const nodeCardMetricBoxClass = computed(() => isMiniNodeCard.value
   ? 'px-1 py-1'
   : appStore.nodeCardSize === 'compact' ? 'px-1.5 py-1.5' : 'px-2 py-1.5')
@@ -181,12 +181,10 @@ const remainingInfoTags = computed<RemainingInfoTag[]>(() => {
     }
     else {
       items.push({
-        icon: 'tabler:coin',
         prefix: lang === 'zh-CN' ? '已用' : 'Used',
         value: formatCurrencyValue(getUsedValue(node.price, node.billing_cycle, node.expired_at), node.currency),
       })
       items.push({
-        icon: 'tabler:coins',
         prefix: lang === 'zh-CN' ? '剩余' : 'Left',
         value: formatCurrencyValue(getRemainingValue(node.price, node.billing_cycle, node.expired_at), node.currency),
       })
@@ -446,7 +444,7 @@ function hasFlag(): boolean {
                 class="text-[11px] flex items-center gap-0.5"
                 :class="item.className ?? 'text-muted-foreground'"
               >
-                <Icon :icon="item.icon" width="11" height="11" class="shrink-0" />
+                <Icon v-if="item.icon" :icon="item.icon" width="11" height="11" class="shrink-0" />
                 <span v-if="item.text" class="truncate min-w-0 overflow-hidden">{{ item.text }}</span>
                 <template v-else>
                   <span v-if="item.prefix" class="shrink-0">{{ item.prefix }}</span>

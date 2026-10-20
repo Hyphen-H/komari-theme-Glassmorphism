@@ -54,6 +54,12 @@ export type HomeQuickControlKey
     | 'highLoad'
     | 'expiring'
 
+export type HomeNodeSortMode
+  = | 'default'
+    | 'remainingTime'
+    | 'monthlyValue'
+    | 'remainingValue'
+
 export type DetailMetricCardKey
   = | 'nodePrice'
     | 'monthlyCost'
@@ -978,6 +984,20 @@ const useAppStore = defineStore('app', () => {
     },
   })
 
+  // 首页节点排序方式（默认 / 剩余时间 / 月价值 / 剩余总价值），本地持久化
+  const storedHomeNodeSortMode = useStorageAsync<HomeNodeSortMode>('homeNodeSortMode', 'default', localStorage)
+
+  function isValidHomeNodeSortMode(value: unknown): value is HomeNodeSortMode {
+    return value === 'default' || value === 'remainingTime' || value === 'monthlyValue' || value === 'remainingValue'
+  }
+
+  const homeNodeSortMode = computed<HomeNodeSortMode>({
+    get: () => isValidHomeNodeSortMode(storedHomeNodeSortMode.value) ? storedHomeNodeSortMode.value : 'default',
+    set: (value) => {
+      storedHomeNodeSortMode.value = value
+    },
+  })
+
   // 计算属性：从主题配置获取 RPC 连接模式
   const rpcTransportMode = computed<RpcTransportMode>(() => {
     const settings = themeSettings.value
@@ -1325,6 +1345,7 @@ const useAppStore = defineStore('app', () => {
     nodeViewMode,
     defaultViewMode,
     nodeCardSize,
+    homeNodeSortMode,
     rpcTransportMode,
     byteDecimals,
     alertEnabled,

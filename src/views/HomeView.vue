@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PermissionKey } from '@/services/auth.service'
-import type { HomeQuickControlKey } from '@/stores/app'
+import type { HomeNodeSortMode, HomeQuickControlKey } from '@/stores/app'
 import type { NodeData } from '@/stores/nodes'
 import { Icon } from '@iconify/vue'
 import { useDebounceFn } from '@vueuse/core'
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Empty } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useVisitorAudit } from '@/composables/useVisitorAudit'
 import { UI_CONFIG } from '@/constants/ui'
@@ -110,6 +111,39 @@ const quickControlDefinitions: Record<HomeQuickControlKey, QuickControlOption> =
   expiring: { key: 'expiring', label: '即将到期', icon: 'tabler:calendar-exclamation' },
 }
 
+const nodeSortOptions: Array<{ value: HomeNodeSortMode, label: string }> = [
+  { value: 'default', label: '默认排序' },
+  { value: 'remainingTime', label: '剩余时间 少→多' },
+  { value: 'monthlyValue', label: '月价值 高→低' },
+  { value: 'remainingValue', label: '剩余总价值 高→低' },
+]
+
+// 未登录且主题开启「隐藏价格」时，不提供按金额排序，避免间接暴露价格高低
+const canSeeNodePrice = computed(() => appStore.privateFeaturesAllowed || !appStore.hidePriceWhenLoggedOut)
+const visibleNodeSortOptions = computed(() => canSeeNodePrice.value
+  ? nodeSortOptions
+  : nodeSortOptions.filter(option => option.value === 'default' || option.value === 'remainingTime'))
+
+watch(visibleNodeSortOptions, (options) => {
+  if (!options.some(option => option.value === appStore.homeNodeSortMode))
+    appStore.homeNodeSortMode = 'default'
+}, { immediate: true })
+
+// 这些快捷控制本身会重新排序，和下拉排序互斥，避免两层排序叠加
+const QUICK_CONTROL_SORT_KEYS = new Set<HomeQuickControlKey>(['monthlyCost', 'totalTraffic', 'upload', 'download', 'peak'])
+
+function isQuickControlSort(key: HomeQuickControlKey): boolean {
+  return QUICK_CONTROL_SORT_KEYS.has(key)
+}
+
+function handleNodeSortChange(value: string) {
+  if (!nodeSortOptions.some(option => option.value === value))
+    return
+  appStore.homeNodeSortMode = value as HomeNodeSortMode
+  if (activeQuickControl.value && isQuickControlSort(activeQuickControl.value))
+    activeQuickControl.value = null
+}
+
 const homeTools = computed<HomeToolOption[]>(() => {
   if (!appStore.homeToolsEnabled)
     return []
@@ -200,6 +234,29 @@ function getNodeMonthlyCostCNY(node: NodeData): number {
     return 0
 
   return financeHelper.calculateMonthlyCostCNY(node, exchangeRates.value)
+}
+
+// 剩余天数：已过期返回负数（优先排前），无到期时间返回 Infinity（排最后）
+function getNodeRemainingDays(node: NodeData): number {
+  if (!node.expired_at)
+    return Number.POSITIVE_INFINITY
+  const end = new Date(node.expired_at).getTime()
+  if (!Number.isFinite(end))
+    return Number.POSITIVE_INFINITY
+  return Math.ceil((end - Date.now()) / (24 * 60 * 60 * 1000))
+}
+
+function applyHomeNodeSort(nodes: NodeData[]): NodeData[] {
+  switch (appStore.homeNodeSortMode) {
+    case 'remainingTime':
+      return placeOfflineNodesLast([...nodes].sort((a, b) => getNodeRemainingDays(a) - getNodeRemainingDays(b)))
+    case 'monthlyValue':
+      return placeOfflineNodesLast(sortNodesByComputedValue(nodes, getNodeMonthlyCostCNY))
+    case 'remainingValue':
+      return placeOfflineNodesLast(sortNodesByComputedValue(nodes, node => financeHelper.calculateRemainingValueCNY(node, exchangeRates.value)))
+    default:
+      return nodes
+  }
 }
 
 function sortNodesByComputedValue(nodes: NodeData[], selector: (node: NodeData) => number): NodeData[] {
@@ -299,7 +356,7 @@ const nodeList = computed(() => {
   if (debouncedSearchText.value.trim()) {
     filtered = filtered.filter(n => isNodeMatchSearch(n, debouncedSearchText.value))
   }
-  return getQuickControlNodes(filtered, activeQuickControl.value)
+  return applyHomeNodeSort(getQuickControlNodes(filtered, activeQuickControl.value))
 })
 
 const isDenseNodeGrid = computed(() => appStore.nodeViewMode === 'card' && nodeList.value.length > denseNodeAppearThreshold)
@@ -350,7 +407,7 @@ function clearSearch() {
 }
 
 const nodeListSortResetKey = computed(() => {
-  return `${appStore.nodeSelectedGroup}|${appStore.nodeSelectedRegion}|${[...selectedTagSet.value].sort().join(',')}|${debouncedSearchText.value.trim()}|${activeQuickControl.value ?? 'all'}`
+  return `${appStore.nodeSelectedGroup}|${appStore.nodeSelectedRegion}|${[...selectedTagSet.value].sort().join(',')}|${debouncedSearchText.value.trim()}|${activeQuickControl.value ?? 'all'}|${appStore.homeNodeSortMode}`
 })
 
 function handleNodeClick(node: NodeData) {
@@ -372,7 +429,11 @@ function getNodeItemTransitionStyle(index: number): Record<string, string> {
 }
 
 function setQuickControl(key: HomeQuickControlKey) {
-  activeQuickControl.value = activeQuickControl.value === key ? null : key
+  const next = activeQuickControl.value === key ? null : key
+  activeQuickControl.value = next
+  // 快捷排序生效时清空下拉排序，避免两个排序叠加
+  if (next && isQuickControlSort(next))
+    appStore.homeNodeSortMode = 'default'
   void recordVisitorEvent({
     event: 'filter_change',
     path: '/',
@@ -580,6 +641,14 @@ const nodeCardGridClass = computed(() => {
                 </Button>
               </div>
 
+              <Select
+                v-if="activeHomeTool === 'nodes'"
+                :model-value="appStore.homeNodeSortMode"
+                :options="visibleNodeSortOptions"
+                aria-label="节点排序"
+                class="h-8 w-36 border-none bg-background/50 px-2 text-xs shadow-none backdrop-blur-xs hover:bg-background/60"
+                @update:model-value="handleNodeSortChange"
+              />
               <Button
                 variant="outline" size="icon" aria-label="卡片视图"
                 class="w-8 h-8 border-none bg-background/50 backdrop-blur-xs shadow-none hover:bg-background/60 rounded-md"
