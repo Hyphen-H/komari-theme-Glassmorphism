@@ -178,6 +178,17 @@ const selectedTagSet = computed(() => new Set(
     .filter((tag): tag is string => typeof tag === 'string' && Boolean(tag.trim())),
 ))
 
+// 标签多选开关：默认关闭（单选，选新标签会替换旧标签）；开启后保留已选标签并做多重筛选。
+const multiTagFilter = ref(false)
+watch([selectedTagSet, multiTagFilter], ([selected, multi]) => {
+  // 关闭多选时只保留最近选择的标签，避免开关关闭却仍处于多标签过滤状态。
+  if (!multi && selected.size > 1) {
+    const last = [...selected].pop()
+    if (last)
+      appStore.nodeSelectedTags = [last]
+  }
+}, { immediate: true })
+
 watch(
   () => [appStore.homeQuickControlOrder.join('|'), appStore.homeQuickControlsEnabled] as const,
   () => {
@@ -445,18 +456,28 @@ function setQuickControl(key: HomeQuickControlKey) {
 
 function toggleTag(tag: string) {
   const next = new Set(selectedTagSet.value)
-  if (next.has(tag))
+  if (next.has(tag)) {
     next.delete(tag)
-  else
+  }
+  else if (!multiTagFilter.value) {
+    next.clear()
     next.add(tag)
+  }
+  else {
+    next.add(tag)
+  }
   appStore.nodeSelectedTags = [...next]
   void recordVisitorEvent({
     event: 'filter_change',
     path: '/',
     route: 'home',
     target: 'tags',
-    detail: { selected_count: next.size, result_count: nodeList.value.length },
+    detail: { selected_count: next.size, multi: multiTagFilter.value, result_count: nodeList.value.length },
   })
+}
+
+function toggleMultiTagFilter() {
+  multiTagFilter.value = !multiTagFilter.value
 }
 
 function clearTags() {
@@ -719,6 +740,17 @@ const nodeCardGridClass = computed(() => {
           </div>
           <div v-if="nodesStore.tags.length && activeHomeTool === 'nodes'" class="home-controls-scroll pointer-events-auto min-w-0 overflow-x-auto overscroll-x-contain rounded-sm touch-pan-x">
             <div class="flex w-max items-center gap-1 rounded-md bg-background/50 px-2 py-1 backdrop-blur-xl">
+              <Badge
+                as="button"
+                :variant="multiTagFilter ? 'default' : 'outline'"
+                class="h-6 shrink-0 cursor-pointer select-none rounded-md px-2 text-[11px] transition-colors"
+                :aria-pressed="multiTagFilter"
+                aria-label="多选标签筛选"
+                title="多选：保留已选标签并同时匹配；关闭后选择新标签会替换原标签"
+                @click="toggleMultiTagFilter"
+              >
+                多选
+              </Badge>
               <span class="mr-1 shrink-0 text-xs text-muted-foreground">标签</span>
               <Badge
                 v-for="tag in nodesStore.tags" :key="tag"

@@ -12,6 +12,10 @@
 
 ## 当前任务
 
+- 2026-10-20 标签筛选多选开关（M5，done）：后台节点列表与主题首页的标签筛选最左侧新增“多选”开关，默认关闭。关闭=单选（选择新标签会替换旧标签）；开启=保留已选标签并做交集（AND）过滤；关闭开关时自动收敛为最近选择的标签（主题侧持久化的多标签选择也会在默认单选中收敛）。后台通过 Header 组件透传状态与切换函数，主题用 `watch([selectedTagSet, multiTagFilter])` 同时监听标签集合与开关；i18n 五种语言新增 `common.multiSelect`/`multiSelectHint`，标签按钮补充 `aria-pressed`，开关使用 `role="button"`/`aria-pressed`/`title`；访客事件记录新增 `multi` 字段。
+- 验证：web `tsc`/lint 通过；`script/tag-filter.test.mjs` 按新交互重写（默认替换、多选 AND、关闭收敛、最左侧按钮、aria 状态），并与 `test:node-table-layout`/`test:admin-sort`/`test:node-sort`/`test:billing-defaults` 全部通过；额外 1440/390 浏览器回归通过。主题 `bun run lint`/`bun run build` 通过；主题开发服务器 + 生产只读公开数据在 1440/390 通过“单选替换/多选保留/关闭收敛”。
+- 已推送部署 v3.4.11：web c8c49d9、theme 本次提交（主题版本 3.4.11），均在原功能分支。生产 Snapshot-261020-tag-multiselect（backend dccf22f，内嵌主题同步重建），主题 3.4.11；首页/后台/主题/源码元数据 200，admin source c8c49d9 dirty=false，后台与首页产物均含新文案；DB quick_check=ok，节点 36 条保留（未删改用户节点）。回滚 `/opt/komari/rollback-v3411-20261020_145108`（前一份 14:44:14），部署脚本 `/root/komari/.buildtmp/deploy-tagfilter.py`；回归脚本 `/root/komari/.buildtmp/tag-multiselect-browser.mjs`、`/root/komari/.buildtmp/theme-tag-multiselect.mjs`。
+
 - 2026-10-20 节点列表横向滚动条常驻页底（M5，done）：节点列表表格 `min-width: 1480px` 超出视口时，表格自身的横向滚动条被隐藏，改由页面底部常驻一条自绘横向滚动条（`position: sticky; bottom: 0`）接管：滑块宽度/位置跟随表格 `scrollWidth/scrollLeft`，支持拖动滑块、点击轨道跳转、方向键 / Home / End 键盘操作；页面纵向滚动时滚动条固定在视口底部，任意时刻都能横向查看最右侧的备注与客户端版本列。页面容器去掉底部内边距（`p-4` → `px-4 pt-4`）使滚动条更贴近窗口底部。
 - 验证：生产 mock 校验滚动条常驻视口底部（track y=774，视口高 800）、拖动滑块表格同步滚动（scrollLeft 329）、纵向滚动后位置不变；回归脚本 `web/script/node-table-layout.test.mjs` 增补常驻滚动条断言；`test:node-table-layout`、`test:billing-defaults`、`test:admin-sort`、`test:tag-filter`、`test:node-sort` 全部通过；web lint 0 error/27 条既有 warning、tsc/build 通过；主题 `sync:admin`/lint/build 通过。
 - 部署：web `fe56dab`、theme 本提交；生产仅替换主题（backend/`dccf22f9` 未动），公网 `/admin-app/index.html` sha256 `aa7948c9...` 与本地一致；节点 28；回滚 `/opt/komari/rollback-theme-20261020_103133`，脚本 `/root/komari/.buildtmp/deploy-theme.py`。
