@@ -12,6 +12,10 @@
 
 ## 当前任务
 
+- 2026-10-26 展示页标签自动换行（M4，done）：首页分组 Tabs 与标签筛选条从固定宽度横向滚动改为受容器约束的 `flex-wrap` 布局；标签超出当前行后自动进入下一行，不再撑出页面宽度。保持分组切换、快捷筛选、搜索和标签筛选行为不变。
+- 验证：`bun run lint`、`bun run build`、`git diff --check` 通过；构建包 `komari-theme-Glassmorphism-build-69e17ec.zip`，版本 3.4.11，SHA-256 `9d2e51fc012d28c07f3428b77feb936c6f4cc6cfe094baaae7146e2240dc8d60`。未执行可交互浏览器视觉回归，生产首页及资源 HTTP 校验通过。
+- 已推送部署：主题提交 `69e17ec` 已推送 `feat/glassmorphism-group-tag-filter`；生产 `bero` 上仅原子替换 `/opt/komari/data/theme/Glassmorphism`，Komari 服务未重启且保持 active。回滚目录 `/opt/komari/data/theme/Glassmorphism.rollback-tags-wrap.20261026_190232`；生产首页、后台均 HTTP 200，线上首页入口引用的新 `index-BwjOZ5uF.js` 与本地构建 SHA-256 一致。
+
 - 2026-10-20 标签筛选多选开关（M5，done）：后台节点列表与主题首页的标签筛选最左侧新增“多选”开关，默认关闭。关闭=单选（选择新标签会替换旧标签）；开启=保留已选标签并做交集（AND）过滤；关闭开关时自动收敛为最近选择的标签（主题侧持久化的多标签选择也会在默认单选中收敛）。后台通过 Header 组件透传状态与切换函数，主题用 `watch([selectedTagSet, multiTagFilter])` 同时监听标签集合与开关；i18n 五种语言新增 `common.multiSelect`/`multiSelectHint`，标签按钮补充 `aria-pressed`，开关使用 `role="button"`/`aria-pressed`/`title`；访客事件记录新增 `multi` 字段。
 - 验证：web `tsc`/lint 通过；`script/tag-filter.test.mjs` 按新交互重写（默认替换、多选 AND、关闭收敛、最左侧按钮、aria 状态），并与 `test:node-table-layout`/`test:admin-sort`/`test:node-sort`/`test:billing-defaults` 全部通过；额外 1440/390 浏览器回归通过。主题 `bun run lint`/`bun run build` 通过；主题开发服务器 + 生产只读公开数据在 1440/390 通过“单选替换/多选保留/关闭收敛”。
 - 已推送部署 v3.4.11：web c8c49d9、theme 本次提交（主题版本 3.4.11），均在原功能分支。生产 Snapshot-261020-tag-multiselect（backend dccf22f，内嵌主题同步重建），主题 3.4.11；首页/后台/主题/源码元数据 200，admin source c8c49d9 dirty=false，后台与首页产物均含新文案；DB quick_check=ok，节点 36 条保留（未删改用户节点）。回滚 `/opt/komari/rollback-v3411-20261020_145108`（前一份 14:44:14），部署脚本 `/root/komari/.buildtmp/deploy-tagfilter.py`；回归脚本 `/root/komari/.buildtmp/tag-multiselect-browser.mjs`、`/root/komari/.buildtmp/theme-tag-multiselect.mjs`。
