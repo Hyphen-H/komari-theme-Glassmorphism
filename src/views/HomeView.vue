@@ -611,10 +611,10 @@ const nodeCardGridClass = computed(() => {
     <div class="node-info p-4 pt-0 flex flex-col gap-4 relative z-1 pointer-events-none" :class="!!appStore.hideGeneralCard && 'pt-4'">
       <div class="nodes min-w-0">
         <Tabs v-model="appStore.nodeSelectedGroup" class="w-full flex-col gap-4">
-          <div class="flex flex-col gap-2 xl:flex-row xl:items-center">
-            <div class="home-controls-scroll min-w-0 overflow-x-auto overscroll-x-contain rounded-sm pointer-events-auto touch-pan-x">
-              <div class="flex w-max gap-2">
-                <TabsList class="w-max h-8 bg-background/50 backdrop-blur-xl rounded-md pointer-events-auto">
+          <div class="flex flex-col gap-2 xl:flex-row xl:items-start">
+            <div class="home-controls-scroll min-w-0 flex-1 rounded-sm pointer-events-auto">
+              <div class="flex w-full min-w-0 flex-wrap gap-2">
+                <TabsList class="min-w-0 max-w-full h-auto min-h-8 flex-1 flex-wrap justify-start bg-background/50 backdrop-blur-xl rounded-md pointer-events-auto">
                   <TabsTrigger
                     v-for="g in groups" :key="g.name" :value="g.name"
                     class="h-6.5 flex-none shrink-0 text-xs border-none data-[state=active]:text-selection shadow-none rounded-sm"
@@ -738,8 +738,8 @@ const nodeCardGridClass = computed(() => {
               </Badge>
             </div>
           </div>
-          <div v-if="nodesStore.tags.length && activeHomeTool === 'nodes'" class="home-controls-scroll pointer-events-auto min-w-0 overflow-x-auto overscroll-x-contain rounded-sm touch-pan-x">
-            <div class="flex w-max items-center gap-1 rounded-md bg-background/50 px-2 py-1 backdrop-blur-xl">
+          <div v-if="nodesStore.tags.length && activeHomeTool === 'nodes'" class="home-controls-scroll pointer-events-auto min-w-0 rounded-sm">
+            <div class="flex w-full min-w-0 flex-wrap items-center gap-1 rounded-md bg-background/50 px-2 py-1 backdrop-blur-xl">
               <Badge
                 as="button"
                 :variant="multiTagFilter ? 'default' : 'outline'"
