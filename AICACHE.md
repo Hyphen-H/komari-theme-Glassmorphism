@@ -12,7 +12,9 @@
 
 ## 当前任务
 
-- 2026-10-28 主面板按剩余流量排序（M5，in-progress）：在 Glassmorphism 首页节点排序下拉中新增“剩余流量 少→多”，按流量配额减去对应统计方式的已用流量计算；无限流量节点排在末尾，并继续遵循离线节点置底设置。待完成源码修改、lint/build、提交推送及生产主题原子部署与线上校验。
+- 2026-10-28 主面板按剩余流量排序（M5，done）：在 Glassmorphism 首页节点排序下拉中新增“剩余流量 少→多”，按流量配额减去对应统计方式的已用流量计算；无限流量节点排在末尾，并继续遵循离线节点置底设置。修改 `src/stores/app.ts`、`src/utils/nodeMetricsHelper.ts`、`src/views/HomeView.vue`。
+- 验证：`bun run lint`、`bun run build`、`git diff --check` 通过；主题包 `komari-theme-Glassmorphism-build-41de610.zip`，版本 3.4.11，SHA-256 `3d01d6ef48eb10cc2116d34c699ea3616db1135e75fbd84997298c6a32154315`。未执行交互式浏览器验证，当前会话无可控 OpenChamber 浏览器客户端。
+- 已推送并部署：主题提交 `41de610` 已推送 `feat/glassmorphism-group-tag-filter`；生产 `bero` 仅原子替换 `/opt/komari/data/theme/Glassmorphism`，Komari 服务保持 active。回滚目录 `/opt/komari/data/theme/Glassmorphism.rollback-remaining-traffic.20261028_170524`；本地与线上 `HomeView-BbDmNHjL.js` SHA-256 均为 `920fc9b2fc41c39da680e55d413fee1f87487e2a1958a08697b1d6cd712ff897`，线上资源包含“剩余流量 少→多”，主题 manifest 返回 3.4.11。
 
 - 2026-10-26 展示页标签自动换行（M4，done）：首页分组 Tabs 与标签筛选条从固定宽度横向滚动改为受容器约束的 `flex-wrap` 布局；标签超出当前行后自动进入下一行，不再撑出页面宽度。保持分组切换、快捷筛选、搜索和标签筛选行为不变。
 - 验证：`bun run lint`、`bun run build`、`git diff --check` 通过；构建包 `komari-theme-Glassmorphism-build-69e17ec.zip`，版本 3.4.11，SHA-256 `9d2e51fc012d28c07f3428b77feb936c6f4cc6cfe094baaae7146e2240dc8d60`。未执行可交互浏览器视觉回归，生产首页及资源 HTTP 校验通过。
