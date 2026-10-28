@@ -29,6 +29,13 @@ export function getTrafficUsed(node: Pick<NodeData, 'net_total_up' | 'net_total_
   }
 }
 
+export function getRemainingTraffic(node: Pick<NodeData, 'traffic_limit' | 'net_total_up' | 'net_total_down' | 'traffic_limit_type'>): number {
+  if (!hasTrafficLimit(node))
+    return Number.POSITIVE_INFINITY
+
+  return Math.max(0, node.traffic_limit - getTrafficUsed(node))
+}
+
 export function getTrafficUsedPercentage(node: Pick<NodeData, 'traffic_limit' | 'net_total_up' | 'net_total_down' | 'traffic_limit_type'>): number {
   if (!hasTrafficLimit(node))
     return 0

@@ -57,6 +57,7 @@ export type HomeQuickControlKey
 export type HomeNodeSortMode
   = | 'default'
     | 'remainingTime'
+    | 'remainingTraffic'
     | 'monthlyValue'
     | 'remainingValue'
 
@@ -984,11 +985,11 @@ const useAppStore = defineStore('app', () => {
     },
   })
 
-  // 首页节点排序方式（默认 / 剩余时间 / 月价值 / 剩余总价值），本地持久化
+  // 首页节点排序方式（默认 / 剩余时间 / 剩余流量 / 月价值 / 剩余总价值），本地持久化
   const storedHomeNodeSortMode = useStorageAsync<HomeNodeSortMode>('homeNodeSortMode', 'default', localStorage)
 
   function isValidHomeNodeSortMode(value: unknown): value is HomeNodeSortMode {
-    return value === 'default' || value === 'remainingTime' || value === 'monthlyValue' || value === 'remainingValue'
+    return value === 'default' || value === 'remainingTime' || value === 'remainingTraffic' || value === 'monthlyValue' || value === 'remainingValue'
   }
 
   const homeNodeSortMode = computed<HomeNodeSortMode>({

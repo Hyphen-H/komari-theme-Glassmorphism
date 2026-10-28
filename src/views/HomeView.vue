@@ -22,6 +22,7 @@ import { useNodesStore } from '@/stores/nodes'
 import * as financeHelper from '@/utils/financeHelper'
 import {
   getRealtimePeakSpeed,
+  getRemainingTraffic,
   getTotalTraffic,
   isExpiringNode,
   isHighLoadNode,
@@ -114,6 +115,7 @@ const quickControlDefinitions: Record<HomeQuickControlKey, QuickControlOption> =
 const nodeSortOptions: Array<{ value: HomeNodeSortMode, label: string }> = [
   { value: 'default', label: '默认排序' },
   { value: 'remainingTime', label: '剩余时间 少→多' },
+  { value: 'remainingTraffic', label: '剩余流量 少→多' },
   { value: 'monthlyValue', label: '月价值 高→低' },
   { value: 'remainingValue', label: '剩余总价值 高→低' },
 ]
@@ -122,7 +124,7 @@ const nodeSortOptions: Array<{ value: HomeNodeSortMode, label: string }> = [
 const canSeeNodePrice = computed(() => appStore.privateFeaturesAllowed || !appStore.hidePriceWhenLoggedOut)
 const visibleNodeSortOptions = computed(() => canSeeNodePrice.value
   ? nodeSortOptions
-  : nodeSortOptions.filter(option => option.value === 'default' || option.value === 'remainingTime'))
+  : nodeSortOptions.filter(option => option.value === 'default' || option.value === 'remainingTime' || option.value === 'remainingTraffic'))
 
 watch(visibleNodeSortOptions, (options) => {
   if (!options.some(option => option.value === appStore.homeNodeSortMode))
@@ -261,6 +263,8 @@ function applyHomeNodeSort(nodes: NodeData[]): NodeData[] {
   switch (appStore.homeNodeSortMode) {
     case 'remainingTime':
       return placeOfflineNodesLast([...nodes].sort((a, b) => getNodeRemainingDays(a) - getNodeRemainingDays(b)))
+    case 'remainingTraffic':
+      return placeOfflineNodesLast([...nodes].sort((a, b) => getRemainingTraffic(a) - getRemainingTraffic(b)))
     case 'monthlyValue':
       return placeOfflineNodesLast(sortNodesByComputedValue(nodes, getNodeMonthlyCostCNY))
     case 'remainingValue':

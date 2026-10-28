@@ -12,6 +12,8 @@
 
 ## 当前任务
 
+- 2026-10-28 主面板按剩余流量排序（M5，in-progress）：在 Glassmorphism 首页节点排序下拉中新增“剩余流量 少→多”，按流量配额减去对应统计方式的已用流量计算；无限流量节点排在末尾，并继续遵循离线节点置底设置。待完成源码修改、lint/build、提交推送及生产主题原子部署与线上校验。
+
 - 2026-10-26 展示页标签自动换行（M4，done）：首页分组 Tabs 与标签筛选条从固定宽度横向滚动改为受容器约束的 `flex-wrap` 布局；标签超出当前行后自动进入下一行，不再撑出页面宽度。保持分组切换、快捷筛选、搜索和标签筛选行为不变。
 - 验证：`bun run lint`、`bun run build`、`git diff --check` 通过；构建包 `komari-theme-Glassmorphism-build-69e17ec.zip`，版本 3.4.11，SHA-256 `9d2e51fc012d28c07f3428b77feb936c6f4cc6cfe094baaae7146e2240dc8d60`。未执行可交互浏览器视觉回归，生产首页及资源 HTTP 校验通过。
 - 已推送部署：主题提交 `69e17ec` 已推送 `feat/glassmorphism-group-tag-filter`；生产 `bero` 上仅原子替换 `/opt/komari/data/theme/Glassmorphism`，Komari 服务未重启且保持 active。回滚目录 `/opt/komari/data/theme/Glassmorphism.rollback-tags-wrap.20261026_190232`；生产首页、后台均 HTTP 200，线上首页入口引用的新 `index-BwjOZ5uF.js` 与本地构建 SHA-256 一致。
